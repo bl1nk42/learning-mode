@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "Injects learning-mode guidance at session start.",
   "skills": "./skills/",
+  "homepage": "https://github.com/bl1nk42/learning-mode",
+  "repository": "https://github.com/bl1nk42/learning-mode",
   "author": {
     "name": "Local developer"
   },
@@ -13,6 +15,9 @@
     "developerName": "Local developer",
     "category": "Productivity",
     "capabilities": ["Instructions", "Lifecycle hooks"],
+    "websiteURL": "https://github.com/bl1nk42/learning-mode",
+    "privacyPolicyURL": "https://github.com/bl1nk42/learning-mode/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/bl1nk42/learning-mode/blob/main/TERMS.md",
     "defaultPrompt": ["Help me learn while we build this."]
   }
 }
