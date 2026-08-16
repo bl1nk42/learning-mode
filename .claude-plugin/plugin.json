@@ -1,0 +1,9 @@
+{
+  "name": "learning-mode",
+  "version": "0.1.0",
+  "description": "Injects learning-mode guidance at session start.",
+  "author": {
+    "name": "Local developer"
+  },
+  "hooks": "./hooks/claude-hooks.json"
+}

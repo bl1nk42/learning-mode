@@ -1,0 +1,6 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "learning-mode",
+  "description": "Learning-oriented guidance for coding agents.",
+  "plugins": [{"name": "learning-mode", "description": "Explain meaningful trade-offs while building.", "source": "./", "category": "productivity"}]
+}
