@@ -1,6 +1,6 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.2.8 adds an Obsidian learning-plan Canvas beside each grounded Markdown wiki.
+Portable learning-oriented guidance for coding agents. Version 0.2.9 generates and validates an Obsidian learning-plan Canvas beside each grounded Markdown wiki.
 
 Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md).
 

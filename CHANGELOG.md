@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.9 — 2026-08-17
+
+- Generate `learning-plan.canvas` deterministically from the four core wiki Markdown files.
+- Validate its Canvas nodes, geometry, and learning-path edges.
+
 ## 0.2.8 — 2026-08-17
 
 - Add a generated `learning-plan.canvas` beside every Insight Wiki.
