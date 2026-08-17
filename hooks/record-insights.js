@@ -28,8 +28,9 @@ function references(block, cwd) {
 
 function insights(text, cwd) {
   const found = [];
+  const unquoted = text.replace(/^>\s?/gm, '');
   const pattern = /★\s*Insight[^\n]*\n([\s\S]*?)(?:\n[─—-]{8,}(?:\n|$)|$)/g;
-  for (const match of text.matchAll(pattern)) {
+  for (const match of unquoted.matchAll(pattern)) {
     const bullets = match[1].split('\n')
       .map((line) => line.trim().replace(/^[-*]\s+/, ''))
       .filter(Boolean);

@@ -1,13 +1,13 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.2.6 adds a grounded Insight Wiki writing pipeline on top of default/off guidance, project logs, and the user-level index.
+Portable learning-oriented guidance for coding agents. Version 0.2.7 adds prominent blockquote Insights on top of the grounded Insight Wiki writing pipeline.
 
 ## Behavior
 
 - Explain trade-offs only for meaningful decisions: behavior, errors, algorithms, data, UX, or architecture.
 - Ask one short, concrete question when the user can choose that behavior.
 - Do routine work without turning it into a lesson.
-- Add a `★ Insight` block before and after non-trivial code changes.
+- Add a blockquote `★ Insight` before and after non-trivial code changes; terminals that style Markdown quotes render it prominently.
 - Keep one deduplicated log at `.learning-mode/insights.jsonl`; the hook extracts only framed `★ Insight` blocks whose bullets cite exact `path/to/file:line` references, so subagent chatter is excluded.
 - Append references to the user index at `~/.learning-mode/insight-index.jsonl` (override with `LEARNING_MODE_HOME`), allowing teaching to connect related work from multiple projects.
 

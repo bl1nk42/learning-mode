@@ -24,9 +24,9 @@ def test_default_log_is_deduplicated_and_off_stops_capture(tmp_path):
     source = tmp_path / "runtime.js"
     source.write_text("// parent owns the log\n", encoding="utf-8")
     transcript = tmp_path / "transcript.jsonl"
-    insight = """★ Insight ─────────────────────────────────────
-- `runtime.js:1` — keep one parent log; subagents only report events.
-─────────────────────────────────────────────────"""
+    insight = """> ★ Insight ─────────────────────────────────────
+> - `runtime.js:1` — keep one parent log; subagents only report events.
+> ─────────────────────────────────────────────────"""
     transcript.write_text(json.dumps({"assistant": insight}) + "\n", encoding="utf-8")
     payload = {"cwd": str(tmp_path), "transcript_path": str(transcript)}
 
