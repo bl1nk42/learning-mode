@@ -17,7 +17,7 @@ Use one user-owned teaching workspace at `$LEARNING_MODE_HOME/teach` (default: `
 - `lessons/`: small self-contained HTML lessons.
 - `reference/`, `assets/`, and `NOTES.md`: durable reference material, reusable lesson components, and learner preferences.
 
-When Learning Mode is the source, read `$LEARNING_MODE_HOME/insight-index.jsonl` (default: `~/.learning-mode/insight-index.jsonl`). It indexes evidence from many project logs and retains each source project plus `file:line` context. Select only entries relevant to the user's stated goal; never assume projects are related merely because they appear in the index. Do not turn logs into learning records automatically: write a record only after the user demonstrates understanding.
+When Learning Mode is the source, use the relevant `insight-wikis/<topic>/` artifact first. `insight-wiki` owns selection, verification, and cross-project synthesis; use its `sources.md` to inspect evidence when needed. Do not turn logs or a wiki into learning records automatically: write a record only after the user demonstrates understanding.
 
 First establish or read the mission. Then use existing learning records to choose the next task in the user's zone of proximal development. Prefer high-trust sources over parametric claims, retrieval practice over passive review, spacing over cramming, and immediate feedback for exercises.
 
