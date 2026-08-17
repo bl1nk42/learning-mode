@@ -23,12 +23,10 @@ Write the wiki in the language the user uses for this request. Thai request mean
 1. Resolve the user's topic or question. Search all indexed insights, not only the current project.
 2. Group candidates by concept and flow. Dedupe repeated claims; retain contrasting implementations when they illuminate the same concept.
 3. Verify source files and lines. Read enough surrounding code to explain the connection; do not infer a relationship from matching words alone.
-4. Build these files:
-   - `README.md`: a concise, one-chapter explanation of the topic and how the insights connect.
-   - `concepts.md`: concept map with short definitions and links to sections.
-   - `sources.md`: every included/excluded insight ID, project, `file:line`, and verification status.
-   - `flows.md`: a sequence or Mermaid diagram only when an actual flow becomes clearer visually.
-   - `.insight-wiki-state.json`: topic, language, selected IDs, source locations, and build timestamp for refresh.
-5. Keep the initial wiki narrow. Prefer one coherent chapter over a catalogue. Refresh incrementally using the state file when the user asks.
+4. Write `evidence.md` as the read-only verified pile: selected insight IDs, their text, source project, `file:line`, and the observed connection. Write `sources.md` with every included/excluded entry and verification status.
+5. Invoke `writing-beats` on `evidence.md` to create `beats.md`. It owns prerequisites and the order in which concepts are grounded.
+6. Invoke `writing-shape` on `evidence.md` plus `beats.md` to create `README.md`. It owns the user-readable introduction and chapter; the wiki must not be a chronological log dump.
+7. Add `concepts.md`, `flows.md`, or a Mermaid diagram only when the selected evidence needs them. Write `.insight-wiki-state.json` with topic, language, selected IDs, source locations, and build timestamp for refresh.
+8. Keep the initial wiki narrow. Prefer one coherent chapter over a catalogue. Refresh incrementally using the state file when the user asks.
 
 The README must explicitly distinguish observed code facts from the explanatory synthesis. It may link to other topic wikis, but must not invent sources or present log entries as universal best practices.

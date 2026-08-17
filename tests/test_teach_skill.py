@@ -25,3 +25,14 @@ def test_insight_wiki_is_the_cross_project_curator():
     assert "insight-index.jsonl" in wiki
     assert "user uses for this request" in wiki
     assert "sources.md" in wiki
+    assert "writing-beats" in wiki
+    assert "writing-shape" in wiki
+
+
+def test_wiki_writing_skills_keep_evidence_separate_from_prose():
+    beats = (ROOT / "skills" / "writing-beats" / "SKILL.md").read_text(encoding="utf-8")
+    shape = (ROOT / "skills" / "writing-shape" / "SKILL.md").read_text(encoding="utf-8")
+
+    assert "evidence.md" in beats
+    assert "beats.md" in shape
+    assert "read-only" in shape

@@ -1,0 +1,20 @@
+# Changelog
+
+## 0.2.5 — 2026-08-17
+
+- Add `writing-beats` and `writing-shape` to the Insight Wiki pipeline.
+- Write `evidence.md` first, then a grounded `beats.md`, then a user-language `README.md`.
+- Add this changelog.
+
+## 0.2.2
+
+- Add the cross-project `insight-wiki` curator skill.
+
+## 0.2.1
+
+- Capture framed `★ Insight` blocks with verified `file:line` references.
+- Add the stateful `teach` skill and cross-project user index.
+
+## 0.2.0
+
+- Add `default`/`off` runtime modes, project insight logs, and Deep Learning routing.
