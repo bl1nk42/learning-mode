@@ -1,10 +1,11 @@
 # Changelog
 
-## 0.2.5 — 2026-08-17
+## 0.2.6 — 2026-08-17
 
 - Add `writing-beats` and `writing-shape` to the Insight Wiki pipeline.
 - Write `evidence.md` first, then a grounded `beats.md`, then a user-language `README.md`.
 - Add this changelog.
+- Add the Insight Wiki outcome checker.
 
 ## 0.2.2
 

@@ -1,6 +1,6 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.2.5 adds a grounded Insight Wiki writing pipeline on top of default/off guidance, project logs, and the user-level index.
+Portable learning-oriented guidance for coding agents. Version 0.2.6 adds a grounded Insight Wiki writing pipeline on top of default/off guidance, project logs, and the user-level index.
 
 ## Behavior
 
