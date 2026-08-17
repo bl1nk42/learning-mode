@@ -25,11 +25,13 @@ function appendLogs(cwd, entries) {
   const existing = new Set(readLogs(cwd).map((entry) => entry.id));
   const additions = [];
   for (const entry of entries) {
-    if (!entry.decision || !entry.evidence) continue;
-    const id = crypto.createHash('sha256').update(`${normalize(entry.decision)}\n${normalize(entry.evidence)}`).digest('hex').slice(0, 16);
+    if (!Array.isArray(entry.insights) || !entry.insights.length || !entry.references?.length) continue;
+    const id = crypto.createHash('sha256')
+      .update(`${entry.insights.map(normalize).join('\n')}\n${JSON.stringify(entry.references)}`)
+      .digest('hex').slice(0, 16);
     if (existing.has(id)) continue;
     existing.add(id);
-    additions.push({ id, recordedAt: new Date().toISOString(), decision: entry.decision, evidence: entry.evidence, tags: Array.isArray(entry.tags) ? entry.tags.slice(0, 5) : [] });
+    additions.push({ id, recordedAt: new Date().toISOString(), insights: entry.insights, references: entry.references });
   }
   if (!additions.length) return 0;
   fs.mkdirSync(workspaceDir(cwd), { recursive: true });

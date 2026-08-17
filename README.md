@@ -8,7 +8,7 @@ Portable learning-oriented guidance for coding agents. Version 0.2.0 adds a smal
 - Ask one short, concrete question when the user can choose that behavior.
 - Do routine work without turning it into a lesson.
 - Add a `★ Insight` block before and after non-trivial code changes.
-- Keep one deduplicated log at `.learning-mode/insights.jsonl`; only the parent agent records it, so subagent chatter is excluded.
+- Keep one deduplicated log at `.learning-mode/insights.jsonl`; the hook extracts only framed `★ Insight` blocks whose bullets cite exact `path/to/file:line` references, so subagent chatter is excluded.
 
 ### Runtime states
 

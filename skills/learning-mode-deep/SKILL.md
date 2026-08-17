@@ -9,7 +9,7 @@ Use this skill only when the user explicitly asks for deep learning, a quiz, fla
 
 Read `.learning-mode/insights.jsonl` in the current project. It is the only learning evidence. If it is missing or empty, say that no recorded insights exist and suggest returning to Learning Mode default while doing substantive work.
 
-Parse one JSON object per line. Do not invent facts beyond `decision`, `evidence`, and `tags`. Deduplicate by `id` before creating material.
+Parse one JSON object per line. Do not invent facts beyond `insights` and `references`. Deduplicate by `id` before creating material. Cite each question, card, or exercise with its recorded `file:line` reference.
 
 Supported variants:
 
