@@ -1,6 +1,6 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.2.0 adds a small runtime: default/off learning guidance, a per-project canonical insight log, and an on-demand Deep Learning skill.
+Portable learning-oriented guidance for coding agents. Version 0.2.1 adds default/off guidance, per-project canonical logs, and a user-level learning index.
 
 ## Behavior
 
@@ -9,12 +9,13 @@ Portable learning-oriented guidance for coding agents. Version 0.2.0 adds a smal
 - Do routine work without turning it into a lesson.
 - Add a `★ Insight` block before and after non-trivial code changes.
 - Keep one deduplicated log at `.learning-mode/insights.jsonl`; the hook extracts only framed `★ Insight` blocks whose bullets cite exact `path/to/file:line` references, so subagent chatter is excluded.
+- Append references to the user index at `~/.learning-mode/insight-index.jsonl` (override with `LEARNING_MODE_HOME`), allowing teaching to connect related work from multiple projects.
 
 ### Runtime states
 
 - `$learning-mode default` is the normal state: concise guidance and new canonical log entries.
 - `$learning-mode off` returns to ordinary behavior and stops new log capture.
-- `$learning-mode-deep` is a bridge, not a second teaching skill. It passes the accumulated project log and `file:line` evidence to `$teach`, which owns multi-session lessons, exercises, and learning records.
+- `$learning-mode-deep` is a bridge, not a second teaching skill. It filters the user-level index by learning goal and passes cross-project `file:line` evidence to `$teach`, which owns one multi-session user workspace.
 
 The shared source of truth is [AGENTS.md](AGENTS.md). Host-specific adapters only load that same guidance or the bundled skills.
 

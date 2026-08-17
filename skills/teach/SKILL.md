@@ -9,7 +9,7 @@ argument-hint: "What would you like to learn about?"
 
 Use only when the user explicitly asks to be taught. This is the teaching engine for long-running learning; it is not an insight logger and it must not be replaced by ad-hoc quizzes.
 
-Treat the current directory as a teaching workspace. Its state is:
+Use one user-owned teaching workspace at `$LEARNING_MODE_HOME/teach` (default: `~/.learning-mode/teach`), never one workspace per source project. Its state is:
 
 - `MISSION.md`: why the user is learning this; see [MISSION-FORMAT.md](./MISSION-FORMAT.md).
 - `RESOURCES.md`: high-trust knowledge and wisdom sources; see [RESOURCES-FORMAT.md](./RESOURCES-FORMAT.md).
@@ -17,7 +17,7 @@ Treat the current directory as a teaching workspace. Its state is:
 - `lessons/`: small self-contained HTML lessons.
 - `reference/`, `assets/`, and `NOTES.md`: durable reference material, reusable lesson components, and learner preferences.
 
-When Learning Mode is the source, read its project `.learning-mode/insights.jsonl` as evidence of real work and `file:line` context. Do not turn those logs into learning records automatically: write a record only after the user demonstrates understanding.
+When Learning Mode is the source, read `$LEARNING_MODE_HOME/insight-index.jsonl` (default: `~/.learning-mode/insight-index.jsonl`). It indexes evidence from many project logs and retains each source project plus `file:line` context. Select only entries relevant to the user's stated goal; never assume projects are related merely because they appear in the index. Do not turn logs into learning records automatically: write a record only after the user demonstrates understanding.
 
 First establish or read the mission. Then use existing learning records to choose the next task in the user's zone of proximal development. Prefer high-trust sources over parametric claims, retrieval practice over passive review, spacing over cramming, and immediate feedback for exercises.
 
