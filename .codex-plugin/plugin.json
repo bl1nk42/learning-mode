@@ -1,6 +1,6 @@
 {
   "name": "learning-mode",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
   "skills": "./skills/",
   "homepage": "https://github.com/bl1nk42/learning-mode",

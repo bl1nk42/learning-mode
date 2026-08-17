@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.10 — 2026-08-17
+
+- Add CI checks for host adapter copies and manifest version consistency.
+- Align all static host adapters with the canonical `AGENTS.md` guidance.
+
 ## 0.2.9 — 2026-08-17
 
 - Generate `learning-plan.canvas` deterministically from the four core wiki Markdown files.

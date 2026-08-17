@@ -1,6 +1,6 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.2.9 generates and validates an Obsidian learning-plan Canvas beside each grounded Markdown wiki.
+Portable learning-oriented guidance for coding agents. Version 0.2.10 adds CI checks for host-rule and manifest-version drift.
 
 Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md).
 
@@ -91,6 +91,8 @@ OpenCode uses the bundled runtime adapter. Put this in the target project's `ope
 
 ```sh
 python3 /data/data/com.termux/files/home/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
+node scripts/check-rule-copies.js
+node scripts/check-versions.js
 node hooks/session-start.js
 python3 -B -m pytest -q
 ```

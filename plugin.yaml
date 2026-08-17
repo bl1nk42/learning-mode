@@ -1,5 +1,5 @@
 name: learning-mode
-version: 0.2.9
+version: 0.2.10
 description: Concise learning-oriented guidance for coding sessions.
 provides_hooks:
   - pre_llm_call
