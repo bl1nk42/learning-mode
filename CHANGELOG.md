@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.8 — 2026-08-17
+
+- Add a generated `learning-plan.canvas` beside every Insight Wiki.
+- Validate that the Canvas links the core Markdown artifacts and exposes the learning path.
+
 ## 0.2.7 — 2026-08-17
 
 - Add `writing-beats` and `writing-shape` to the Insight Wiki pipeline.

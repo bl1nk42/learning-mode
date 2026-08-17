@@ -1,6 +1,6 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.2.7 adds prominent blockquote Insights on top of the grounded Insight Wiki writing pipeline.
+Portable learning-oriented guidance for coding agents. Version 0.2.8 adds an Obsidian learning-plan Canvas beside each grounded Markdown wiki.
 
 Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md).
 
@@ -18,6 +18,7 @@ Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md)
 - `$learning-mode default` is the normal state: concise guidance and new canonical log entries.
 - `$learning-mode off` returns to ordinary behavior and stops new log capture.
 - `$insight-wiki <topic>` searches, verifies, and connects cross-project insight evidence into a user-readable wiki in the user's language.
+- Each user-requested wiki includes `learning-plan.canvas`: an optional Obsidian view of its Markdown evidence and `Observed → Practice → Demonstrated → Transfer` path.
 - `writing-beats` turns the verified evidence pile into a prerequisite-safe grounding path; `writing-shape` turns that path into the wiki chapter.
 - `$learning-mode-deep` routes `insight-wiki → teach`; `teach` owns one multi-session user workspace and never has to act as a log search engine.
 

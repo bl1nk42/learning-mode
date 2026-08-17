@@ -23,6 +23,22 @@ def test_wiki_checker_distinguishes_grounded_evidence_from_bad_wiki(tmp_path):
     (good / "evidence.md").write_text(insight_id, encoding="utf-8")
     (good / "beats.md").write_text("Requires: hooks\nGrounds: state\nEvidence: " + insight_id, encoding="utf-8")
     (good / "sources.md").write_text(insight_id, encoding="utf-8")
+    (good / "learning-plan.canvas").write_text(json.dumps({
+        "nodes": [
+            *[{"id": name, "type": "file", "file": name + ".md", "x": 0, "y": index * 100, "width": 320, "height": 180}
+              for index, name in enumerate(["README", "evidence", "beats", "sources"])],
+            *[{"id": key, "type": "text", "text": label, "x": 400, "y": index * 100, "width": 180, "height": 80}
+              for index, (key, label) in enumerate([
+                ("observed", "Observed"), ("practice", "Practice"),
+                ("demonstrated", "Demonstrated"), ("transfer", "Transfer"),
+            ])],
+        ],
+        "edges": [
+            {"id": "observe-practice", "fromNode": "observed", "toNode": "practice"},
+            {"id": "practice-demonstrate", "fromNode": "practice", "toNode": "demonstrated"},
+            {"id": "demonstrate-transfer", "fromNode": "demonstrated", "toNode": "transfer"},
+        ],
+    }), encoding="utf-8")
     assert check(good, index) == 0
 
     bad = tmp_path / "bad"
