@@ -14,7 +14,7 @@ Portable learning-oriented guidance for coding agents. Version 0.2.0 adds a smal
 
 - `$learning-mode default` is the normal state: concise guidance and new canonical log entries.
 - `$learning-mode off` returns to ordinary behavior and stops new log capture.
-- `$learning-mode-deep quiz|flashcard|workshop|all` is a separate skill, not a hook state. It reads only the accumulated project log.
+- `$learning-mode-deep` is a bridge, not a second teaching skill. It passes the accumulated project log and `file:line` evidence to `$teach`, which owns multi-session lessons, exercises, and learning records.
 
 The shared source of truth is [AGENTS.md](AGENTS.md). Host-specific adapters only load that same guidance or the bundled skills.
 
