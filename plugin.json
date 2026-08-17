@@ -1,6 +1,6 @@
 {
   "name": "learning-mode",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Concise learning-oriented guidance for coding sessions.",
   "contextFileName": "AGENTS.md"
 }
