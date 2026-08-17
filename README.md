@@ -1,6 +1,6 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.2.10 adds CI checks for host-rule and manifest-version drift.
+Portable learning-oriented guidance for coding agents. Version 0.3.0 adds Markdown exercise design to the Deep Learning pipeline.
 
 Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md).
 
@@ -21,6 +21,7 @@ Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md)
 - Each user-requested wiki includes `learning-plan.canvas`: an optional Obsidian view of its Markdown evidence and `Observed → Practice → Demonstrated → Transfer` path.
 - `writing-beats` turns the verified evidence pile into a prerequisite-safe grounding path; `writing-shape` turns that path into the wiki chapter.
 - `$learning-mode-deep` routes `insight-wiki → teach`; `teach` owns one multi-session user workspace and never has to act as a log search engine.
+- `scaffold-exercises` turns a teaching mission or wiki into Markdown practice: basic, linear, quiz, level, quest, scenario, or challenge.
 
 The shared source of truth is [AGENTS.md](AGENTS.md). Host-specific adapters only load that same guidance or the bundled skills.
 

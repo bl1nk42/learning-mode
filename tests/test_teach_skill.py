@@ -17,6 +17,16 @@ def test_teach_skill_keeps_its_stateful_workspace_contract():
         "GLOSSARY-FORMAT.md",
     ]:
         assert (teach / name).is_file()
+    assert "scaffold-exercises" in text
+
+
+def test_exercise_skill_designs_markdown_practice_without_git_policy():
+    exercise = (ROOT / "skills" / "scaffold-exercises" / "SKILL.md").read_text(encoding="utf-8")
+
+    assert "basic" in exercise and "challenge" in exercise
+    assert "learning_objectives" in exercise and "passing criteria" in exercise
+    assert "never commit" in exercise
+    assert "do not build a CLI" in exercise
 
 
 def test_insight_wiki_is_the_cross_project_curator():

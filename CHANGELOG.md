@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 — 2026-08-17
+
+- Add `scaffold-exercises` for user-owned Markdown practice in the teaching workspace.
+- Let `teach` use format-aware exercises without introducing an exercise CLI or Git policy.
+
 ## 0.2.10 — 2026-08-17
 
 - Add CI checks for host adapter copies and manifest version consistency.
