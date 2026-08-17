@@ -1,7 +1,7 @@
 {
   "name": "learning-mode",
-  "version": "0.1.0",
-  "description": "Injects learning-mode guidance at session start.",
+  "version": "0.2.0",
+  "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
   "author": {
     "name": "Local developer"
   },

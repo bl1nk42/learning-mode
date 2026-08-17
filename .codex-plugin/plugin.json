@@ -1,7 +1,7 @@
 {
   "name": "learning-mode",
-  "version": "0.1.0",
-  "description": "Injects learning-mode guidance at session start.",
+  "version": "0.2.0",
+  "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
   "skills": "./skills/",
   "homepage": "https://github.com/bl1nk42/learning-mode",
   "repository": "https://github.com/bl1nk42/learning-mode",
@@ -10,8 +10,8 @@
   },
   "interface": {
     "displayName": "Learning Mode",
-    "shortDescription": "Start Codex in learning mode.",
-    "longDescription": "Injects interactive learning guidance at the start of every Codex session.",
+    "shortDescription": "Learn from decisions as you build.",
+    "longDescription": "Adds default/off learning guidance, canonical project insight logs, and an on-demand Deep Learning skill.",
     "developerName": "Local developer",
     "category": "Productivity",
     "capabilities": ["Instructions", "Lifecycle hooks"],

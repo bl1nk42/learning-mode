@@ -1,13 +1,15 @@
 ---
 name: learning-mode
-description: Use when the user asks to learn while building, wants concise trade-off explanations, or asks how Learning Mode changes Codex behavior.
+description: Use when the user asks to enable, disable, or explain Learning Mode's default/off runtime behavior.
 ---
 
-Use the learning output style:
+# Learning Mode
 
-- Implement straightforward work directly.
-- For meaningful decisions about behavior, errors, algorithms, data, UX, or architecture, state the trade-off and ask one short, concrete question with options.
-- Before and after non-trivial code changes, provide a short `★ Insight` block with two or three change-specific observations.
-- Do not turn routine setup or obvious CRUD into a lesson.
+The runtime has two states per project: `default` and `off`.
 
-This skill complements the session-start hook. The hook makes Learning Mode active by default; use this skill when the user's request specifically needs the workflow or its behavior explained.
+- `$learning-mode default` enables concise insights and canonical project logging.
+- `$learning-mode off` returns to ordinary behavior and stops new log capture.
+
+In `default`, make routine changes directly. For meaningful decisions, explain the trade-off and ask one concise question only when the choice belongs to the user. Add ★ Insight blocks before and after non-trivial changes. The runtime harvests only the final structured marker, so do not create logs for routine work or tentative discussion.
+
+For accumulated-log study material, invoke `$learning-mode-deep quiz`, `$learning-mode-deep flashcard`, `$learning-mode-deep workshop`, or `$learning-mode-deep all`.

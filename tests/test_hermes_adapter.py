@@ -32,4 +32,4 @@ def test_registers_skill_and_context_hook():
 
     assert context.skills[0][0] == "learning-mode"
     assert context.hooks[0][0] == "pre_llm_call"
-    assert "learning mode" in context.hooks[0][1]()["context"]
+    assert "learning mode" in context.hooks[0][1]()["context"].lower()

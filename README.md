@@ -1,6 +1,6 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. It implements straightforward work directly, explains meaningful trade-offs, and adds a short insight block around non-trivial code changes.
+Portable learning-oriented guidance for coding agents. Version 0.2.0 adds a small runtime: default/off learning guidance, a per-project canonical insight log, and an on-demand Deep Learning skill.
 
 ## Behavior
 
@@ -8,8 +8,15 @@ Portable learning-oriented guidance for coding agents. It implements straightfor
 - Ask one short, concrete question when the user can choose that behavior.
 - Do routine work without turning it into a lesson.
 - Add a `★ Insight` block before and after non-trivial code changes.
+- Keep one deduplicated log at `.learning-mode/insights.jsonl`; only the parent agent records it, so subagent chatter is excluded.
 
-The shared source of truth is [AGENTS.md](AGENTS.md). Host-specific adapters only load that same guidance or the bundled `learning-mode` skill.
+### Runtime states
+
+- `$learning-mode default` is the normal state: concise guidance and new canonical log entries.
+- `$learning-mode off` returns to ordinary behavior and stops new log capture.
+- `$learning-mode-deep quiz|flashcard|workshop|all` is a separate skill, not a hook state. It reads only the accumulated project log.
+
+The shared source of truth is [AGENTS.md](AGENTS.md). Host-specific adapters only load that same guidance or the bundled skills.
 
 ## Install
 
@@ -79,6 +86,15 @@ OpenCode uses the bundled runtime adapter. Put this in the target project's `ope
 ```sh
 python3 /data/data/com.termux/files/home/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
 node hooks/session-start.js
+python3 -B -m pytest -q
 ```
 
 The Codex and Claude hooks require `node` on `PATH`.
+
+### Claude status line (optional)
+
+The bundled badge displays the current state and count of recorded insights. Add this command to Claude Code's `statusLine` setting if you want it:
+
+```json
+{ "statusLine": { "type": "command", "command": "sh /absolute/path/to/learning-mode/hooks/learning-mode-statusline.sh" } }
+```
