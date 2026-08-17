@@ -1,6 +1,6 @@
 {
   "name": "learning-mode",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Concise learning-oriented guidance for coding sessions.",
   "skills": "./skills/",
   "rules": "./.qoder/rules/"
