@@ -2,6 +2,8 @@
 
 Portable learning-oriented guidance for coding agents. Version 0.2.7 adds prominent blockquote Insights on top of the grounded Insight Wiki writing pipeline.
 
+Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md).
+
 ## Behavior
 
 - Explain trade-offs only for meaningful decisions: behavior, errors, algorithms, data, UX, or architecture.
