@@ -14,9 +14,12 @@ def check(wiki, index, json_output=False):
     return result.returncode, result.stdout, result.stderr
 
 
-def generate(wiki):
+def generate(wiki, index=None):
+    command = ["node", ROOT / "scripts" / "generate-learning-plan-canvas.js", wiki]
+    if index is not None:
+        command.extend(["--index", index])
     return subprocess.run(
-        ["node", ROOT / "scripts" / "generate-learning-plan-canvas.js", wiki],
+        command,
         capture_output=True,
     ).returncode
 
@@ -24,14 +27,14 @@ def generate(wiki):
 def test_wiki_checker_distinguishes_grounded_evidence_from_bad_wiki(tmp_path):
     insight_id = "0123456789abcdef"
     index = tmp_path / "index.jsonl"
-    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+    index.write_text(json.dumps({"id": insight_id, "references": [{"file": "hooks/runtime.js", "line": 36}]}) + "\n", encoding="utf-8")
     good = tmp_path / "good"
     good.mkdir()
     (good / "README.md").write_text("# Hook flow\n", encoding="utf-8")
     (good / "evidence.md").write_text(insight_id, encoding="utf-8")
     (good / "beats.md").write_text("Requires: hooks\nGrounds: state\nEvidence: " + insight_id, encoding="utf-8")
     (good / "sources.md").write_text(insight_id, encoding="utf-8")
-    assert generate(good) == 0
+    assert generate(good, index) == 0
     assert check(good, index)[0] == 0
 
     bad = tmp_path / "bad"
@@ -46,7 +49,7 @@ def test_checker_emits_structured_diagnostics_on_failure(tmp_path):
     """With --json flag, validator returns structured diagnostics instead of just exit code."""
     insight_id = "0123456789abcdef"
     index = tmp_path / "index.jsonl"
-    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+    index.write_text(json.dumps({"id": insight_id, "references": [{"file": "hooks/runtime.js", "line": 36}]}) + "\n", encoding="utf-8")
 
     bad = tmp_path / "bad"
     bad.mkdir()
@@ -75,14 +78,14 @@ def test_checker_emits_structured_diagnostics_on_failure(tmp_path):
 def valid_wiki(tmp_path):
     insight_id = "0123456789abcdef"
     index = tmp_path / "index.jsonl"
-    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+    index.write_text(json.dumps({"id": insight_id, "references": [{"file": "hooks/runtime.js", "line": 36}]}) + "\n", encoding="utf-8")
     wiki = tmp_path / "wiki"
     wiki.mkdir()
     (wiki / "README.md").write_text("# Hook flow\n", encoding="utf-8")
     (wiki / "evidence.md").write_text(insight_id, encoding="utf-8")
     (wiki / "beats.md").write_text("Requires: hooks\nGrounds: state\nEvidence: " + insight_id, encoding="utf-8")
     (wiki / "sources.md").write_text(insight_id, encoding="utf-8")
-    assert generate(wiki) == 0
+    assert generate(wiki, index) == 0
     return wiki, index
 
 
@@ -142,6 +145,18 @@ def test_checker_reports_invalid_coordinate(tmp_path):
     assert diagnostic["evidence"]["badNodes"][0]["x"] is None
 
 
+def test_checker_reports_unpinned_evidence(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    next(node for node in canvas["nodes"] if node["id"] == "evidence").pop("evidenceRefs")
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "EVIDENCE_NOT_PINNED"
+
+
 def test_checker_reports_stale_evidence_id(tmp_path):
     wiki, index = valid_wiki(tmp_path)
     stale_id = "fedcba9876543210"
@@ -169,3 +184,85 @@ def test_generator_writes_schema_valid_canvas_and_receipt_atomically(tmp_path):
     assert receipt["schemaVersion"] == "1.0.0"
     assert canvas["meta"]["title"] == "Hook flow"
     assert canvas["meta"]["schemaVersion"] == "1.0.0"
+
+
+def test_generator_pins_evidence_to_indexed_source_references(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    canvas = json.loads((wiki / "learning-plan.canvas").read_text(encoding="utf-8"))
+    evidence_node = next(node for node in canvas["nodes"] if node["id"] == "evidence")
+
+    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    assert evidence_node["evidenceRefs"] == [{
+        "id": "0123456789abcdef",
+        "path": "hooks/runtime.js",
+        "line": 36,
+        "revision": revision,
+    }]
+
+
+def test_generator_validates_canvas_against_the_declared_json_schema(tmp_path):
+    wiki, _ = valid_wiki(tmp_path)
+    result = subprocess.run(
+        ["node", "scripts/validate-learning-plan-canvas.js", wiki / "learning-plan.canvas"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"ok": True}
+
+
+def test_canvas_schema_rejects_an_unknown_node_property(tmp_path):
+    wiki, _ = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    canvas["nodes"][0]["unexpected"] = True
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+
+    result = subprocess.run(
+        ["node", "scripts/validate-learning-plan-canvas.js", canvas_path],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert json.loads(result.stderr)["code"] == "INVALID_CANVAS_SCHEMA"
+
+
+def test_canvas_schema_declares_the_required_phase_chain():
+    schema = json.loads((ROOT / "schemas" / "learning-plan-canvas.schema.json").read_text(encoding="utf-8"))
+
+    assert schema["x-learning-mode-phase-chain"] == {
+        "nodes": ["observed", "practice", "demonstrated", "transfer"],
+        "edges": ["observed->practice", "practice->demonstrated", "demonstrated->transfer"],
+    }
+
+
+def test_compare_wiki_reports_evidence_beat_and_source_deltas(tmp_path):
+    before = tmp_path / "before"
+    after = tmp_path / "after"
+    before.mkdir()
+    after.mkdir()
+    (before / "evidence.md").write_text("## Observed\n0123456789abcdef old connection\n1111111111111111\n", encoding="utf-8")
+    (after / "evidence.md").write_text("## New first\n2222222222222222\n## Observed\n0123456789abcdef revised connection\n", encoding="utf-8")
+    (before / "beats.md").write_text("# Start\n## Observe\n## Practice\n", encoding="utf-8")
+    (after / "beats.md").write_text("# Start\n## Practice\n## Observe\n", encoding="utf-8")
+    (before / "sources.md").write_text("0123456789abcdef\n", encoding="utf-8")
+    (after / "sources.md").write_text("0123456789abcdef\n2222222222222222\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["node", "scripts/compare-wiki.js", before, after],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    delta = json.loads(result.stdout)
+    assert delta["addedEvidenceIds"] == ["2222222222222222"]
+    assert delta["removedEvidenceIds"] == ["1111111111111111"]
+    assert delta["changedEvidenceIds"] == ["0123456789abcdef"]
+    assert delta["movedBeatSections"] == [{"section": "Observe", "before": 1, "after": 2}, {"section": "Practice", "before": 2, "after": 1}]
+    assert delta["missingSources"] == {"before": ["1111111111111111"], "after": []}

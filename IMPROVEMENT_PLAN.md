@@ -13,7 +13,14 @@ Based on analysis of baseline commit f515acc and 4 reference repositories:
 - [x] Phase 0.1 — CI runs the Python regression suite.
 - [x] Phase 0.2 — CI pins Node 20.
 - [x] Phase 0.3–0.5 — Validator emits JSON diagnostics and covers required failure modes.
-- [ ] Phase 1 — Canvas schema and atomic receipt delivery.
+- [x] Phase 1 — Canvas delivery accepted (schema validation, receipt, revision-pinned evidence, and comparison complete; guided views deferred as optional).
+  - [x] 1.1 Canvas JSON Schema
+  - [x] 1.2 Schema-backed phase-chain validation
+  - [x] 1.3 Atomic delivery and receipt
+  - [x] 1.4 Evidence-aware grid layout
+  - [x] 1.5 Evidence revision pinning
+  - [x] 1.6 Wiki comparison
+  - [ ] 1.7 Guided views sidecar (optional)
 - [ ] Phase 2 — Insight-store migration and visibility rules.
 - [ ] Phase 3 — Workflow graph execution.
 - [ ] Phase 4 — Multi-host hardening.

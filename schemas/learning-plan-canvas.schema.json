@@ -1,7 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bl1nk42/learning-mode/schemas/learning-plan-canvas.schema.json",
   "title": "Learning Mode Canvas",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "meta",
     "nodes",
@@ -10,19 +12,272 @@
   "properties": {
     "meta": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "title",
         "locale",
         "repository",
         "schemaVersion"
-      ]
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "repository": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "url",
+            "revision"
+          ],
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "revision": {
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "nodes": {
-      "type": "array"
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "x",
+          "y",
+          "width",
+          "height"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          },
+          "type": {
+            "enum": [
+              "file",
+              "text",
+              "group"
+            ]
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "width": {
+            "type": "number",
+            "minimum": 1
+          },
+          "height": {
+            "type": "number",
+            "minimum": 1
+          },
+          "file": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "path",
+                "line",
+                "revision"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{16}$"
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "revision": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{40}$"
+                }
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "const": "evidence"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "then": {
+              "properties": {
+                "evidenceRefs": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "path",
+                      "line",
+                      "revision"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{16}$"
+                      },
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "line": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{40}$"
+                      }
+                    }
+                  }
+                }
+              },
+              "required": [
+                "evidenceRefs"
+              ]
+            }
+          }
+        ]
+      }
     },
     "edges": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "fromNode",
+          "toNode"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          },
+          "fromNode": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          },
+          "toNode": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "contains": {
+            "properties": {
+              "fromNode": {
+                "const": "observed"
+              },
+              "toNode": {
+                "const": "practice"
+              }
+            },
+            "required": [
+              "fromNode",
+              "toNode"
+            ],
+            "type": "object"
+          },
+          "minContains": 1
+        },
+        {
+          "contains": {
+            "properties": {
+              "fromNode": {
+                "const": "practice"
+              },
+              "toNode": {
+                "const": "demonstrated"
+              }
+            },
+            "required": [
+              "fromNode",
+              "toNode"
+            ],
+            "type": "object"
+          },
+          "minContains": 1
+        },
+        {
+          "contains": {
+            "properties": {
+              "fromNode": {
+                "const": "demonstrated"
+              },
+              "toNode": {
+                "const": "transfer"
+              }
+            },
+            "required": [
+              "fromNode",
+              "toNode"
+            ],
+            "type": "object"
+          },
+          "minContains": 1
+        }
+      ]
     }
   },
-  "additionalProperties": true
+  "x-learning-mode-phase-chain": {
+    "nodes": [
+      "observed",
+      "practice",
+      "demonstrated",
+      "transfer"
+    ],
+    "edges": [
+      "observed->practice",
+      "practice->demonstrated",
+      "demonstrated->transfer"
+    ]
+  }
 }
