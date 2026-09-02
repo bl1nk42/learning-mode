@@ -1,0 +1,90 @@
+{
+  "kind": "plugin-eval-benchmark",
+  "schemaVersion": 2,
+  "version": 2,
+  "targetKind": "plugin",
+  "targetName": "learning-mode",
+  "runner": {
+    "type": "codex-cli",
+    "model": "gpt-5.4",
+    "sandbox": "workspace-write",
+    "approvalPolicy": "never",
+    "extraArgs": []
+  },
+  "workspace": {
+    "sourcePath": "/data/data/com.termux/files/home/.codex/plugins/cache/personal/learning-mode/0.1.0",
+    "setupMode": "git-worktree",
+    "preserve": "on-failure"
+  },
+  "targetProvisioning": {
+    "mode": "workspace-plugin-marketplace"
+  },
+  "verifiers": {
+    "commands": [
+      "python3 -B -m pytest -q",
+      "node scripts/check-rule-copies.js",
+      "node scripts/check-versions.js"
+    ]
+  },
+  "notes": [
+    "Derived from 37 real indexed Learning Mode artifacts, not generic tasks.",
+    "Each scenario names an existing artifact and its source log; no evidence may be fabricated.",
+    "Run one scenario at a time by copying this config and retaining only that scenario when collecting a focused measurement.",
+    "The benchmark uses a detached git worktree so uncommitted implementation work cannot skew the baseline."
+  ],
+  "artifacts": [
+    {
+      "id": "91178cf595e68c92",
+      "project": "/data/data/com.termux/files/home/plugins/sandbox-mcp",
+      "log": "/data/data/com.termux/files/home/plugins/sandbox-mcp/.learning-mode/insights.jsonl",
+      "insight": "`crates/sandbox-mcp-core/src/lib.rs:1045` — preview/telemetry/SSH bypass `ProviderRouter`, แม้ `ProviderCapabilities` บอกว่า Docker/Modal ไม่รองรับ"
+    },
+    {
+      "id": "4b72fc2dd095fb79",
+      "project": "/data/data/com.termux/files/home/plugins",
+      "log": "/data/data/com.termux/files/home/plugins/.learning-mode/insights.jsonl",
+      "insight": "`.codex/agents/code_worker.toml:9` — Serena is enabled only for the implementation worker; it no longer inflates the coordinator’s MCP schema."
+    },
+    {
+      "id": "67eeb2af558a6506",
+      "project": "/data/data/com.termux/files/home/plugins/bmime",
+      "log": "/data/data/com.termux/files/home/plugins/bmime/.learning-mode/insights.jsonl",
+      "insight": "`.claude-plugin/plugin.json:3` — ชื่อ manifest ยังเป็น `xmemo` จึงไม่ตรงกับไดเรกทอรี `bmime`."
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "dedupe-real-sandbox-finding",
+      "title": "Deduplicate a captured provider-capability finding",
+      "purpose": "Exercise the record-insights hook against the existing sandbox-mcp artifact rather than an invented prompt.",
+      "userInput": "Use the local Codex plugin learning-mode. Reproduce the evidence-capture path for existing Learning Mode artifact 91178cf595e68c92 from /data/data/com.termux/files/home/plugins/sandbox-mcp/.learning-mode/insights.jsonl. Verify its cited source files before recording it, submit the same valid Insight twice, and prove that the project log and user index contain one entry for that artifact. Do not alter sandbox-mcp source code.",
+      "successChecklist": [
+        "The referenced source evidence is verified before capture.",
+        "Duplicate capture is suppressed in both project log and user index.",
+        "No sandbox-mcp product files change."
+      ]
+    },
+    {
+      "id": "wiki-from-real-coordinator-artifacts",
+      "title": "Build a wiki from existing coordinator-isolation evidence",
+      "purpose": "Exercise insight-wiki using actual multi-project indexed evidence.",
+      "userInput": "Use the local Codex plugin learning-mode. Build a narrow Thai insight wiki from existing indexed artifact 4b72fc2dd095fb79 and related entries in /data/data/com.termux/files/home/plugins/.learning-mode/insights.jsonl. Preserve IDs and file:line references, distinguish observed facts from synthesis, generate learning-plan.canvas from the Markdown bundle, then validate it. Do not invent evidence or learner progress.",
+      "successChecklist": [
+        "The wiki cites only verified existing index entries.",
+        "README.md, evidence.md, beats.md, sources.md, and learning-plan.canvas exist.",
+        "Canvas validation passes and does not persist learner progress."
+      ]
+    },
+    {
+      "id": "boundary-external-mcp-ownership",
+      "title": "Refuse unsupported cross-plugin ownership",
+      "purpose": "Exercise the plugin boundary using an actual bmime artifact that identifies an external MCP dependency.",
+      "userInput": "Use the local Codex plugin learning-mode. Inspect existing artifact 67eeb2af558a6506 from /data/data/com.termux/files/home/plugins/bmime/.learning-mode/insights.jsonl and create an evidence-backed learning note explaining the ownership boundary: distinguish what bmime owns from the external xmemo service. Do not claim the Learning Mode plugin can repair bmime or fabricate MCP tools.",
+      "successChecklist": [
+        "The note keeps plugin ownership boundaries explicit.",
+        "Every claim retains artifact ID and source reference.",
+        "The response narrows scope instead of proposing unrelated implementation."
+      ]
+    }
+  ]
+}

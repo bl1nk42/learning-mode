@@ -1,0 +1,1 @@
+{"id":"learning-mode-dedupe-real-sandbox-finding","usage":{"input_tokens":158014,"output_tokens":4004,"total_tokens":162018,"input_token_details":{"cached_tokens":77312},"output_tokens_details":{"reasoning_tokens":1396}},"metadata":{"scenario":"Deduplicate a captured provider-capability finding","artifact_id":"91178cf595e68c92","run_id":"2026-09-02T13-55-30"}}

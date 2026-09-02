@@ -88,6 +88,10 @@ OpenCode uses the bundled runtime adapter. Put this in the target project's `ope
 - CodeWhale, VS Code Codex, Amp, Jules, Zed, and generic agents: use `AGENTS.md` as the project instruction file.
 - Junie: select `.junie/guidelines.md` as its Guidelines Path.
 
+## Evaluation
+
+The reproducible Plugin Eval baseline, real-artifact scenarios, measured usage, and task-fit assessment are in [docs/evaluations/2026-09-02-plugin-eval.md](docs/evaluations/2026-09-02-plugin-eval.md).
+
 ## Development checks
 
 ```sh
