@@ -30,7 +30,8 @@ function evidenceRefs(wikiDir, indexFile) {
     const entry = byId.get(id);
     const references = entry?.references;
     if (!Array.isArray(references) || !references.length) throw new Error("Evidence " + id + " has no indexed source reference");
-    const project = entry.source?.project || process.cwd();
+    if (!entry.source?.project) throw new Error("Evidence " + id + " has no indexed source project");
+    const project = entry.source.project;
     const revision = execFileSync("git", ["-C", project, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
     return references.map((reference) => ({ id, path: reference.file, line: reference.line, revision }));
   });
