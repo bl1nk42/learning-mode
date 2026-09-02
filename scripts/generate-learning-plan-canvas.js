@@ -26,10 +26,12 @@ function evidenceRefs(wikiDir, indexFile) {
   const entries = fs.readFileSync(indexFile, "utf8").split("\n").filter(Boolean).map((line) => JSON.parse(line));
   const byId = new Map(entries.map((entry) => [entry.id, entry]));
   const ids = [...new Set((fs.readFileSync(path.join(wikiDir, "evidence.md"), "utf8").match(/\b[a-f0-9]{16}\b/g) || []))];
-  const revision = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.cwd(), encoding: "utf8" }).trim();
   return ids.flatMap((id) => {
-    const references = byId.get(id)?.references;
+    const entry = byId.get(id);
+    const references = entry?.references;
     if (!Array.isArray(references) || !references.length) throw new Error("Evidence " + id + " has no indexed source reference");
+    const project = entry.source?.project || process.cwd();
+    const revision = execFileSync("git", ["-C", project, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
     return references.map((reference) => ({ id, path: reference.file, line: reference.line, revision }));
   });
 }
