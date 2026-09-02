@@ -24,7 +24,15 @@ const index = new Map(fs.readFileSync(indexFile, 'utf8').trim().split('\n').map(
 }));
 
 const required = ['README.md', 'evidence.md', 'beats.md', 'sources.md'];
-const phaseChain = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "schemas", "learning-plan-canvas.schema.json"), "utf8"))["x-learning-mode-phase-chain"];
+let phaseChain;
+try {
+  phaseChain = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'learning-plan-canvas.schema.json'), 'utf8'))['x-learning-mode-phase-chain'];
+} catch (e) {
+  fail({ code: 'INVALID_PHASE_CHAIN_SCHEMA', severity: 'error', subject: 'schema', evidence: { error: e.message }, supportedFixes: [] });
+}
+if (!phaseChain || !Array.isArray(phaseChain.nodes) || !Array.isArray(phaseChain.edges)) {
+  fail({ code: 'INVALID_PHASE_CHAIN_SCHEMA', severity: 'error', subject: 'schema', evidence: { phaseChain }, supportedFixes: [] });
+}
 
 // Helper to emit diagnostics and exit
 function fail(diag) {
