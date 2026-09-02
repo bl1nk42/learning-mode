@@ -6,11 +6,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def check(wiki, index):
-    return subprocess.run(
-        ["node", ROOT / "scripts" / "check-insight-wiki.js", wiki, index],
-        capture_output=True,
-    ).returncode
+def check(wiki, index, json_output=False):
+    cmd = ["node", ROOT / "scripts" / "check-insight-wiki.js", wiki, index]
+    if json_output:
+        cmd.append("--json")
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return result.returncode, result.stdout, result.stderr
 
 
 def generate(wiki):
@@ -31,11 +32,123 @@ def test_wiki_checker_distinguishes_grounded_evidence_from_bad_wiki(tmp_path):
     (good / "beats.md").write_text("Requires: hooks\nGrounds: state\nEvidence: " + insight_id, encoding="utf-8")
     (good / "sources.md").write_text(insight_id, encoding="utf-8")
     assert generate(good) == 0
-    assert check(good, index) == 0
+    assert check(good, index)[0] == 0
 
     bad = tmp_path / "bad"
     bad.mkdir()
     for name in ["README.md", "evidence.md", "sources.md"]:
         (bad / name).write_text(insight_id, encoding="utf-8")
     (bad / "beats.md").write_text("A vague outline", encoding="utf-8")
-    assert check(bad, index) != 0
+    assert check(bad, index)[0] != 0
+
+
+def test_checker_emits_structured_diagnostics_on_failure(tmp_path):
+    """With --json flag, validator returns structured diagnostics instead of just exit code."""
+    insight_id = "0123456789abcdef"
+    index = tmp_path / "index.jsonl"
+    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+
+    bad = tmp_path / "bad"
+    bad.mkdir()
+    for name in ["README.md", "evidence.md", "sources.md"]:
+        (bad / name).write_text(insight_id, encoding="utf-8")
+    (bad / "beats.md").write_text("A vague outline", encoding="utf-8")
+
+    code, stdout, stderr = check(bad, index, json_output=True)
+
+    assert code != 0
+    assert stdout.strip() != ""
+    diag = json.loads(stdout.strip())
+
+    # Structured diagnostics must have these fields
+    assert "code" in diag
+    assert "severity" in diag
+    assert "subject" in diag
+    assert "evidence" in diag
+    assert "supportedFixes" in diag
+    assert isinstance(diag["supportedFixes"], list)
+
+    # The code should identify the specific failure
+    assert diag["code"] in ("MISSING_PHASE_NODE", "MISSING_REQUIRED_FILE", "INVALID_BEATS_FORMAT", "INVALID_CANVAS_JSON")
+
+
+def valid_wiki(tmp_path):
+    insight_id = "0123456789abcdef"
+    index = tmp_path / "index.jsonl"
+    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    (wiki / "README.md").write_text("# Hook flow\n", encoding="utf-8")
+    (wiki / "evidence.md").write_text(insight_id, encoding="utf-8")
+    (wiki / "beats.md").write_text("Requires: hooks\nGrounds: state\nEvidence: " + insight_id, encoding="utf-8")
+    (wiki / "sources.md").write_text(insight_id, encoding="utf-8")
+    assert generate(wiki) == 0
+    return wiki, index
+
+
+def json_diagnostic(wiki, index):
+    code, stdout, _ = check(wiki, index, json_output=True)
+    assert code == 1
+    return json.loads(stdout)
+
+
+def test_checker_reports_missing_required_file(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    (wiki / "sources.md").unlink()
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "MISSING_REQUIRED_FILE"
+    assert diagnostic["evidence"]["missing"] == "sources.md"
+    assert diagnostic["supportedFixes"] == [{"action": "create_file", "file": "sources.md"}]
+
+
+def test_checker_reports_missing_phase_node(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    canvas["nodes"] = [node for node in canvas["nodes"] if node["id"] != "practice"]
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "MISSING_PHASE_NODE"
+    assert diagnostic["evidence"]["missing"] == ["practice"]
+
+
+def test_checker_reports_broken_phase_edge(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    canvas["edges"] = [edge for edge in canvas["edges"] if edge["fromNode"] != "practice"]
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "MISSING_PHASE_EDGE"
+    assert diagnostic["evidence"]["missing"] == ["practice->demonstrated"]
+
+
+def test_checker_reports_invalid_coordinate(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    canvas["nodes"][0]["x"] = None
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "INVALID_NODE_GEOMETRY"
+    assert diagnostic["evidence"]["badNodes"][0]["x"] is None
+
+
+def test_checker_reports_stale_evidence_id(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    stale_id = "fedcba9876543210"
+    (wiki / "evidence.md").write_text(stale_id, encoding="utf-8")
+    (wiki / "sources.md").write_text(stale_id, encoding="utf-8")
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "EVIDENCE_ID_NOT_IN_INDEX"
+    assert diagnostic["evidence"]["missing"] == [stale_id]
