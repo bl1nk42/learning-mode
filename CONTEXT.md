@@ -13,11 +13,11 @@ An external repository, standard, or primary document that has been inspected an
 _Avoid_: inspiration, named reference
 
 **Reference-Derived Implementation**:
-A delivered behavior whose design claim is supported by a Verified Reference and local tests.
+A behavior implemented only after its governing Verified Reference has been inspected and cited, then confirmed by local tests.
 _Avoid_: plan-based implementation, borrowed pattern
 
 **Plan-Derived Draft**:
-A local design inferred only from the improvement plan. It is not a Reference-Derived Implementation and cannot complete a reference-backed checklist item.
+A local design inferred only from the improvement plan. It may be discussed, but it must not be implemented for a reference-backed checklist item before its governing Verified Reference is inspected and cited.
 _Avoid_: implementation, completed feature
 
 **Evaluation Artifact**:
