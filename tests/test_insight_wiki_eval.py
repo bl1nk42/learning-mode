@@ -152,3 +152,20 @@ def test_checker_reports_stale_evidence_id(tmp_path):
 
     assert diagnostic["code"] == "EVIDENCE_ID_NOT_IN_INDEX"
     assert diagnostic["evidence"]["missing"] == [stale_id]
+
+
+def test_generator_writes_schema_valid_canvas_and_receipt_atomically(tmp_path):
+    wiki, _ = valid_wiki(tmp_path)
+    receipt_path = wiki / "learning-plan.receipt.json"
+
+    assert receipt_path.is_file()
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    canvas = json.loads((wiki / "learning-plan.canvas").read_text(encoding="utf-8"))
+
+    assert (ROOT / "schemas" / "learning-plan-canvas.schema.json").is_file()
+    assert receipt["canvasPath"] == "learning-plan.canvas"
+    assert len(receipt["sourceBundleSha256"]) == 64
+    assert len(receipt["canvasSha256"]) == 64
+    assert receipt["schemaVersion"] == "1.0.0"
+    assert canvas["meta"]["title"] == "Hook flow"
+    assert canvas["meta"]["schemaVersion"] == "1.0.0"
