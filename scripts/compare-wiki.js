@@ -41,7 +41,18 @@ function compare(beforeDir, afterDir) {
     removedEvidenceIds: beforeIds.filter((id) => !afterSet.has(id)),
     changedEvidenceIds: beforeIds.filter((id) => afterSet.has(id) && beforeEvidence.get(id).join("\n") !== afterEvidence.get(id).join("\n")),
     movedBeatSections: beforeSections.flatMap((section, before) => {
-      const after = afterSections.indexOf(section);
+      const occurrence = beforeSections
+        .slice(0, before)
+        .filter((candidate) => candidate === section)
+        .length;
+      const after = afterSections.findIndex(
+        (candidate, index) =>
+          candidate === section &&
+          afterSections
+            .slice(0, index)
+            .filter((previous) => previous === section)
+            .length === occurrence,
+      );
       return after >= 0 && after !== before ? [{ section, before, after }] : [];
     }),
     missingSources: {
