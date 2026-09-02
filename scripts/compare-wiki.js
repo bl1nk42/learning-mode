@@ -45,14 +45,11 @@ function compare(beforeDir, afterDir) {
         .slice(0, before)
         .filter((candidate) => candidate === section)
         .length;
-      const after = afterSections.findIndex(
-        (candidate, index) =>
-          candidate === section &&
-          afterSections
-            .slice(0, index)
-            .filter((previous) => previous === section)
-            .length === occurrence,
-      );
+      let seen = 0;
+      const after = afterSections.findIndex((candidate) => {
+        if (candidate !== section) return false;
+        return seen++ === occurrence;
+      });
       return after >= 0 && after !== before ? [{ section, before, after }] : [];
     }),
     missingSources: {
