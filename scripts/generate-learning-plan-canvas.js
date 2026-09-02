@@ -7,6 +7,9 @@ const { validateCanvas: validateAgainstSchema } = require("./validate-learning-p
 
 const required = ["README.md", "evidence.md", "beats.md", "sources.md"];
 const schemaVersion = "1.0.0";
+const phaseChain = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "schemas", "learning-plan-canvas.schema.json"), "utf8")
+)["x-learning-mode-phase-chain"];
 
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
@@ -51,16 +54,20 @@ function buildCanvas(wikiDir, indexFile) {
     x: (index % fileColumns) * 380, y: 140 + Math.floor(index / fileColumns) * 200, width: 360, height: 160,
   }));
   const phaseX = fileColumns * 380 + 80;
-  const phases = [["observed", "Observed"], ["practice", "Practice"], ["demonstrated", "Demonstrated"], ["transfer", "Transfer"]]
-    .map(([id, text], index) => ({ id, type: "text", text, x: phaseX, y: 140 + index * 150, width: 220, height: 90 }));
+  const phases = phaseChain.nodes.map((id, index) => ({
+    id, type: "text", text: id.charAt(0).toUpperCase() + id.slice(1),
+    x: phaseX, y: 140 + index * 150, width: 220, height: 90,
+  }));
+  const phaseEdges = phaseChain.edges.map((link) => {
+    const [fromNode, toNode] = link.split("->");
+    return { id: fromNode + "-" + toNode, fromNode, toNode };
+  });
   return {
     meta: { title, locale: "en", repository: { url: "", revision: "unknown" }, schemaVersion },
     nodes: [{ id: "topic", type: "text", text: "# " + title, x: 0, y: 0, width: phaseX + 220, height: 80 }, ...files, ...phases],
     edges: [
-      { id: "evidence-observed", fromNode: "evidence", toNode: "observed" },
-      { id: "observed-practice", fromNode: "observed", toNode: "practice" },
-      { id: "practice-demonstrated", fromNode: "practice", toNode: "demonstrated" },
-      { id: "demonstrated-transfer", fromNode: "demonstrated", toNode: "transfer" },
+      { id: "evidence-" + phaseChain.nodes[0], fromNode: "evidence", toNode: phaseChain.nodes[0] },
+      ...phaseEdges,
     ],
   };
 }
