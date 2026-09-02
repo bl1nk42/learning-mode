@@ -14,9 +14,12 @@ def check(wiki, index, json_output=False):
     return result.returncode, result.stdout, result.stderr
 
 
-def generate(wiki):
+def generate(wiki, index=None):
+    command = ["node", ROOT / "scripts" / "generate-learning-plan-canvas.js", wiki]
+    if index is not None:
+        command.extend(["--index", index])
     return subprocess.run(
-        ["node", ROOT / "scripts" / "generate-learning-plan-canvas.js", wiki],
+        command,
         capture_output=True,
     ).returncode
 
@@ -24,14 +27,14 @@ def generate(wiki):
 def test_wiki_checker_distinguishes_grounded_evidence_from_bad_wiki(tmp_path):
     insight_id = "0123456789abcdef"
     index = tmp_path / "index.jsonl"
-    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+    index.write_text(json.dumps({"id": insight_id, "references": [{"file": "hooks/runtime.js", "line": 36}]}) + "\n", encoding="utf-8")
     good = tmp_path / "good"
     good.mkdir()
     (good / "README.md").write_text("# Hook flow\n", encoding="utf-8")
     (good / "evidence.md").write_text(insight_id, encoding="utf-8")
     (good / "beats.md").write_text("Requires: hooks\nGrounds: state\nEvidence: " + insight_id, encoding="utf-8")
     (good / "sources.md").write_text(insight_id, encoding="utf-8")
-    assert generate(good) == 0
+    assert generate(good, index) == 0
     assert check(good, index)[0] == 0
 
     bad = tmp_path / "bad"
@@ -46,7 +49,7 @@ def test_checker_emits_structured_diagnostics_on_failure(tmp_path):
     """With --json flag, validator returns structured diagnostics instead of just exit code."""
     insight_id = "0123456789abcdef"
     index = tmp_path / "index.jsonl"
-    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+    index.write_text(json.dumps({"id": insight_id, "references": [{"file": "hooks/runtime.js", "line": 36}]}) + "\n", encoding="utf-8")
 
     bad = tmp_path / "bad"
     bad.mkdir()
@@ -75,14 +78,14 @@ def test_checker_emits_structured_diagnostics_on_failure(tmp_path):
 def valid_wiki(tmp_path):
     insight_id = "0123456789abcdef"
     index = tmp_path / "index.jsonl"
-    index.write_text(json.dumps({"id": insight_id}) + "\n", encoding="utf-8")
+    index.write_text(json.dumps({"id": insight_id, "references": [{"file": "hooks/runtime.js", "line": 36}]}) + "\n", encoding="utf-8")
     wiki = tmp_path / "wiki"
     wiki.mkdir()
     (wiki / "README.md").write_text("# Hook flow\n", encoding="utf-8")
     (wiki / "evidence.md").write_text(insight_id, encoding="utf-8")
     (wiki / "beats.md").write_text("Requires: hooks\nGrounds: state\nEvidence: " + insight_id, encoding="utf-8")
     (wiki / "sources.md").write_text(insight_id, encoding="utf-8")
-    assert generate(wiki) == 0
+    assert generate(wiki, index) == 0
     return wiki, index
 
 
@@ -142,6 +145,18 @@ def test_checker_reports_invalid_coordinate(tmp_path):
     assert diagnostic["evidence"]["badNodes"][0]["x"] is None
 
 
+def test_checker_reports_unpinned_evidence(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    next(node for node in canvas["nodes"] if node["id"] == "evidence").pop("evidenceRefs")
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "EVIDENCE_NOT_PINNED"
+
+
 def test_checker_reports_stale_evidence_id(tmp_path):
     wiki, index = valid_wiki(tmp_path)
     stale_id = "fedcba9876543210"
@@ -169,6 +184,20 @@ def test_generator_writes_schema_valid_canvas_and_receipt_atomically(tmp_path):
     assert receipt["schemaVersion"] == "1.0.0"
     assert canvas["meta"]["title"] == "Hook flow"
     assert canvas["meta"]["schemaVersion"] == "1.0.0"
+
+
+def test_generator_pins_evidence_to_indexed_source_references(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    canvas = json.loads((wiki / "learning-plan.canvas").read_text(encoding="utf-8"))
+    evidence_node = next(node for node in canvas["nodes"] if node["id"] == "evidence")
+
+    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    assert evidence_node["evidenceRefs"] == [{
+        "id": "0123456789abcdef",
+        "path": "hooks/runtime.js",
+        "line": 36,
+        "revision": revision,
+    }]
 
 
 def test_generator_validates_canvas_against_the_declared_json_schema(tmp_path):

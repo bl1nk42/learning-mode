@@ -125,6 +125,18 @@ if (canvas.nodes.some((node) => !node.id || !Number.isFinite(node.x) || !Number.
   });
 }
 
+
+const evidenceNode = canvas.nodes.find((node) => node.id === "evidence");
+if (!Array.isArray(evidenceNode?.evidenceRefs) || !evidenceNode.evidenceRefs.length) {
+  fail({
+    code: "EVIDENCE_NOT_PINNED",
+    severity: "error",
+    subject: "canvas.nodes[evidence].evidenceRefs",
+    evidence: { present: Array.isArray(evidenceNode?.evidenceRefs), count: evidenceNode?.evidenceRefs?.length || 0 },
+    supportedFixes: [{ action: "regenerate_canvas", command: "node scripts/generate-learning-plan-canvas.js <wikiDir> --index <insight-index.jsonl>" }]
+  });
+}
+
 const links = new Set(canvas.edges.map((edge) => `${edge.fromNode}->${edge.toNode}`));
 const requiredLinks = phaseChain.edges;
 const missingLinks = requiredLinks.filter((link) => !links.has(link));

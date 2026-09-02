@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const crypto = require("crypto");
+const { execFileSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const { validateCanvas: validateAgainstSchema } = require("./validate-learning-plan-canvas");
@@ -20,15 +21,30 @@ function sourceBundle(wikiDir) {
   return required.map((name) => name + "\0" + fs.readFileSync(path.join(wikiDir, name), "utf8")).join("\0");
 }
 
-function buildCanvas(wikiDir) {
+function evidenceRefs(wikiDir, indexFile) {
+  if (!indexFile) throw new Error("Missing --index <insight-index.jsonl> required for evidence revision pinning");
+  const entries = fs.readFileSync(indexFile, "utf8").split("\n").filter(Boolean).map((line) => JSON.parse(line));
+  const byId = new Map(entries.map((entry) => [entry.id, entry]));
+  const ids = [...new Set((fs.readFileSync(path.join(wikiDir, "evidence.md"), "utf8").match(/\b[a-f0-9]{16}\b/g) || []))];
+  const revision = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.cwd(), encoding: "utf8" }).trim();
+  return ids.flatMap((id) => {
+    const references = byId.get(id)?.references;
+    if (!Array.isArray(references) || !references.length) throw new Error("Evidence " + id + " has no indexed source reference");
+    return references.map((reference) => ({ id, path: reference.file, line: reference.line, revision }));
+  });
+}
+
+function buildCanvas(wikiDir, indexFile) {
   for (const name of required) {
     if (!fs.existsSync(path.join(wikiDir, name))) throw new Error("Missing " + name);
   }
   const title = titleFor(wikiDir);
+  const pinnedEvidence = evidenceRefs(wikiDir, indexFile);
   const evidenceCount = (fs.readFileSync(path.join(wikiDir, "evidence.md"), "utf8").match(/\b[a-f0-9]{16}\b/g) || []).length;
   const fileColumns = evidenceCount > 4 ? 2 : 1;
   const files = required.map((file, index) => ({
     id: file.replace(".md", ""), type: "file", file,
+    ...(file === "evidence.md" ? { evidenceRefs: pinnedEvidence } : {}),
     x: (index % fileColumns) * 380, y: 140 + Math.floor(index / fileColumns) * 200, width: 360, height: 160,
   }));
   const phaseX = fileColumns * 380 + 80;
@@ -60,8 +76,8 @@ function writeAtomically(target, content) {
   fs.renameSync(temp, target);
 }
 
-function writeCanvas(wikiDir) {
-  const canvas = buildCanvas(wikiDir);
+function writeCanvas(wikiDir, indexFile) {
+  const canvas = buildCanvas(wikiDir, indexFile);
   validateCanvas(canvas);
   const canvasText = JSON.stringify(canvas, null, 2) + "\n";
   writeAtomically(path.join(wikiDir, "learning-plan.canvas"), canvasText);
@@ -77,9 +93,9 @@ function writeCanvas(wikiDir) {
 }
 
 if (require.main === module) {
-  const [wikiDir] = process.argv.slice(2);
-  if (!wikiDir) process.exit(2);
-  try { writeCanvas(wikiDir); } catch (error) { process.stderr.write(error.message + "\n"); process.exit(1); }
+  const [wikiDir, flag, indexFile] = process.argv.slice(2);
+  if (!wikiDir || flag !== "--index" || !indexFile) process.exit(2);
+  try { writeCanvas(wikiDir, indexFile); } catch (error) { process.stderr.write(error.message + "\n"); process.exit(1); }
 }
 
 module.exports = { buildCanvas, validateCanvas, writeCanvas };
