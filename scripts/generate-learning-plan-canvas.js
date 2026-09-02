@@ -2,6 +2,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const { validateCanvas: validateAgainstSchema } = require("./validate-learning-plan-canvas");
 
 const required = ["README.md", "evidence.md", "beats.md", "sources.md"];
 const schemaVersion = "1.0.0";
@@ -46,7 +47,8 @@ function buildCanvas(wikiDir) {
 }
 
 function validateCanvas(canvas) {
-  if (!canvas.meta || !Array.isArray(canvas.nodes) || !Array.isArray(canvas.edges)) throw new Error("Canvas does not match schema");
+  const schemaResult = validateAgainstSchema(canvas);
+  if (!schemaResult.ok) throw new Error("Canvas does not match schema: " + JSON.stringify(schemaResult.errors));
   const ids = new Set(canvas.nodes.map((node) => node.id));
   if (ids.size !== canvas.nodes.length || canvas.nodes.some((node) => !node.id || !Number.isFinite(node.x) || !Number.isFinite(node.y) || !Number.isFinite(node.width) || !Number.isFinite(node.height))) throw new Error("Canvas has invalid nodes");
   if (canvas.edges.some((edge) => !edge.id || !ids.has(edge.fromNode) || !ids.has(edge.toNode))) throw new Error("Canvas has invalid edges");

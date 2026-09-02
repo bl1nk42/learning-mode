@@ -171,6 +171,37 @@ def test_generator_writes_schema_valid_canvas_and_receipt_atomically(tmp_path):
     assert canvas["meta"]["schemaVersion"] == "1.0.0"
 
 
+def test_generator_validates_canvas_against_the_declared_json_schema(tmp_path):
+    wiki, _ = valid_wiki(tmp_path)
+    result = subprocess.run(
+        ["node", "scripts/validate-learning-plan-canvas.js", wiki / "learning-plan.canvas"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"ok": True}
+
+
+def test_canvas_schema_rejects_an_unknown_node_property(tmp_path):
+    wiki, _ = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    canvas["nodes"][0]["unexpected"] = True
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+
+    result = subprocess.run(
+        ["node", "scripts/validate-learning-plan-canvas.js", canvas_path],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert json.loads(result.stderr)["code"] == "INVALID_CANVAS_SCHEMA"
+
+
 def test_canvas_schema_declares_the_required_phase_chain():
     schema = json.loads((ROOT / "schemas" / "learning-plan-canvas.schema.json").read_text(encoding="utf-8"))
 
