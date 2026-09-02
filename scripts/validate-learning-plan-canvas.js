@@ -21,7 +21,7 @@ if (require.main === module) {
     const result = validateCanvas(JSON.parse(fs.readFileSync(canvasPath, "utf8")));
     if (result.ok) process.stdout.write(JSON.stringify(result) + "\n");
     else {
-      process.stderr.write(JSON.stringify({ code: "INVALID_CANVAS_SCHEMA", severity: "error", subject: "canvas", evidence: { errors: result.errors }, supportedFixes: [{ action: "regenerate_canvas", command: "node scripts/generate-learning-plan-canvas.js <wikiDir>" }] }) + "\n");
+      process.stderr.write(JSON.stringify({ code: "INVALID_CANVAS_SCHEMA", severity: "error", subject: "canvas", evidence: { errors: result.errors }, supportedFixes: [{ action: "regenerate_canvas", command: "node scripts/generate-learning-plan-canvas.js <wikiDir> --index <insight-index.jsonl>" }] }) + "\n");
       process.exitCode = 1;
     }
   } catch (error) {
