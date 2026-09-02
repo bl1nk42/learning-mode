@@ -15,7 +15,7 @@ Based on analysis of baseline commit f515acc and 4 reference repositories:
 - [x] Phase 0.3–0.5 — Validator emits JSON diagnostics and covers required failure modes.
 - [ ] Phase 1 — Canvas delivery (schema, receipt, and layout complete; validation, evidence pinning, and comparison remain).
   - [x] 1.1 Canvas JSON Schema
-  - [ ] 1.2 Schema-backed phase-chain validation
+  - [x] 1.2 Schema-backed phase-chain validation
   - [x] 1.3 Atomic delivery and receipt
   - [x] 1.4 Evidence-aware grid layout
   - [ ] 1.5 Evidence revision pinning

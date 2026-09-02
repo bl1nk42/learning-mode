@@ -24,5 +24,18 @@
       "type": "array"
     }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "x-learning-mode-phase-chain": {
+    "nodes": [
+      "observed",
+      "practice",
+      "demonstrated",
+      "transfer"
+    ],
+    "edges": [
+      "observed->practice",
+      "practice->demonstrated",
+      "demonstrated->transfer"
+    ]
+  }
 }

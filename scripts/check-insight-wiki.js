@@ -24,6 +24,7 @@ const index = new Map(fs.readFileSync(indexFile, 'utf8').trim().split('\n').map(
 }));
 
 const required = ['README.md', 'evidence.md', 'beats.md', 'sources.md'];
+const phaseChain = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "schemas", "learning-plan-canvas.schema.json"), "utf8"))["x-learning-mode-phase-chain"];
 
 // Helper to emit diagnostics and exit
 function fail(diag) {
@@ -98,7 +99,7 @@ if (nodeIds.size !== canvas.nodes.length) {
   });
 }
 
-const requiredPhases = ['observed', 'practice', 'demonstrated', 'transfer'];
+const requiredPhases = phaseChain.nodes;
 const missingPhases = requiredPhases.filter((id) => !nodeIds.has(id));
 if (missingPhases.length > 0) {
   fail({
@@ -125,7 +126,7 @@ if (canvas.nodes.some((node) => !node.id || !Number.isFinite(node.x) || !Number.
 }
 
 const links = new Set(canvas.edges.map((edge) => `${edge.fromNode}->${edge.toNode}`));
-const requiredLinks = ['observed->practice', 'practice->demonstrated', 'demonstrated->transfer'];
+const requiredLinks = phaseChain.edges;
 const missingLinks = requiredLinks.filter((link) => !links.has(link));
 if (missingLinks.length > 0) {
   fail({

@@ -169,3 +169,12 @@ def test_generator_writes_schema_valid_canvas_and_receipt_atomically(tmp_path):
     assert receipt["schemaVersion"] == "1.0.0"
     assert canvas["meta"]["title"] == "Hook flow"
     assert canvas["meta"]["schemaVersion"] == "1.0.0"
+
+
+def test_canvas_schema_declares_the_required_phase_chain():
+    schema = json.loads((ROOT / "schemas" / "learning-plan-canvas.schema.json").read_text(encoding="utf-8"))
+
+    assert schema["x-learning-mode-phase-chain"] == {
+        "nodes": ["observed", "practice", "demonstrated", "transfer"],
+        "edges": ["observed->practice", "practice->demonstrated", "demonstrated->transfer"],
+    }
