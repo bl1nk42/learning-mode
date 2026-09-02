@@ -238,3 +238,31 @@ def test_canvas_schema_declares_the_required_phase_chain():
         "nodes": ["observed", "practice", "demonstrated", "transfer"],
         "edges": ["observed->practice", "practice->demonstrated", "demonstrated->transfer"],
     }
+
+
+def test_compare_wiki_reports_evidence_beat_and_source_deltas(tmp_path):
+    before = tmp_path / "before"
+    after = tmp_path / "after"
+    before.mkdir()
+    after.mkdir()
+    (before / "evidence.md").write_text("## Observed\n0123456789abcdef old connection\n1111111111111111\n", encoding="utf-8")
+    (after / "evidence.md").write_text("## New first\n2222222222222222\n## Observed\n0123456789abcdef revised connection\n", encoding="utf-8")
+    (before / "beats.md").write_text("# Start\n## Observe\n## Practice\n", encoding="utf-8")
+    (after / "beats.md").write_text("# Start\n## Practice\n## Observe\n", encoding="utf-8")
+    (before / "sources.md").write_text("0123456789abcdef\n", encoding="utf-8")
+    (after / "sources.md").write_text("0123456789abcdef\n2222222222222222\n", encoding="utf-8")
+
+    result = subprocess.run(
+        ["node", "scripts/compare-wiki.js", before, after],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    delta = json.loads(result.stdout)
+    assert delta["addedEvidenceIds"] == ["2222222222222222"]
+    assert delta["removedEvidenceIds"] == ["1111111111111111"]
+    assert delta["changedEvidenceIds"] == ["0123456789abcdef"]
+    assert delta["movedBeatSections"] == [{"section": "Observe", "before": 1, "after": 2}, {"section": "Practice", "before": 2, "after": 1}]
+    assert delta["missingSources"] == {"before": ["1111111111111111"], "after": []}

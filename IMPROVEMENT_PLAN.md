@@ -19,7 +19,7 @@ Based on analysis of baseline commit f515acc and 4 reference repositories:
   - [x] 1.3 Atomic delivery and receipt
   - [x] 1.4 Evidence-aware grid layout
   - [x] 1.5 Evidence revision pinning
-  - [ ] 1.6 Wiki comparison
+  - [x] 1.6 Wiki comparison
   - [ ] 1.7 Guided views sidecar (optional)
 - [ ] Phase 2 — Insight-store migration and visibility rules.
 - [ ] Phase 3 — Workflow graph execution.
