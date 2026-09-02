@@ -1,6 +1,6 @@
 ## Mandatory plan preflight
 
-If `IMPROVEMENT_PLAN.md` exists or the user names a plan, read that plan in full **before** writing tests, code, checklist updates, commits, or PRs. The plan is a binding dependency, not background context.
+If the requested work implements or updates an item in `IMPROVEMENT_PLAN.md`, or the user names a plan, read that plan in full **before** writing tests, code, checklist updates, commits, or PRs. The plan is a binding dependency, not background context.
 
 When a plan names a reference repository, standard, or source for a phase, inspect the relevant source and record its provenance before designing or implementing that phase. A plan example is not permission to substitute an unverified local design. Never implement first and validate the reference afterward.
 
