@@ -2,7 +2,6 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|clear|compact",
         "hooks": [
           {
             "type": "command",
@@ -13,11 +12,48 @@
         ]
       }
     ],
-    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/mode-tracker.js\"", "timeout": 5, "statusMessage": "Updating learning mode..."}]}],
-    "SubagentStart": [{"hooks": [{"type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-start.js\"", "timeout": 5}]}],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Updating learning mode..."
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-start.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "Stop": [
-      {"hooks": [{"type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/record-insights.js\"", "timeout": 5}]},
-      {"hooks": [{"type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/auto-collect-learning-map.js\"", "timeout": 10}]}
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/record-insights.js\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/auto-collect-learning-map.js\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

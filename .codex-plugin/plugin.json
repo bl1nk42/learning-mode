@@ -14,10 +14,15 @@
     "longDescription": "Adds default/off learning guidance, canonical project insight logs, and an on-demand Deep Learning skill.",
     "developerName": "Local developer",
     "category": "Productivity",
-    "capabilities": ["Instructions", "Lifecycle hooks"],
+    "capabilities": [
+      "Instructions",
+      "Lifecycle hooks"
+    ],
     "websiteURL": "https://github.com/bl1nk42/learning-mode",
     "privacyPolicyURL": "https://github.com/bl1nk42/learning-mode/blob/main/PRIVACY.md",
     "termsOfServiceURL": "https://github.com/bl1nk42/learning-mode/blob/main/TERMS.md",
-    "defaultPrompt": ["Help me learn while we build this."]
+    "defaultPrompt": [
+      "Help me learn while we build this."
+    ]
   }
 }

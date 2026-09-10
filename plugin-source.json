@@ -1,0 +1,39 @@
+{
+  "name": "learning-mode",
+  "version": "0.3.0",
+  "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
+  "homepage": "https://github.com/bl1nk42/learning-mode",
+  "repository": "https://github.com/bl1nk42/learning-mode",
+  "hooks": {
+    "SessionStart": [
+      {
+        "script": "session-start.js",
+        "timeout": 5,
+        "statusMessage": "Loading learning mode..."
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "script": "mode-tracker.js",
+        "timeout": 5,
+        "statusMessage": "Updating learning mode..."
+      }
+    ],
+    "SubagentStart": [
+      {
+        "script": "subagent-start.js",
+        "timeout": 5
+      }
+    ],
+    "Stop": [
+      {
+        "script": "record-insights.js",
+        "timeout": 5
+      },
+      {
+        "script": "auto-collect-learning-map.js",
+        "timeout": 10
+      }
+    ]
+  }
+}
