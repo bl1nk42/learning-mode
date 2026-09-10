@@ -142,17 +142,57 @@ function createLearningMapJSON(insights, projectRoot, projectName) {
 	const projectId = getProjectId(projectRoot);
 	const today = new Date().toISOString().split("T")[0];
 
+	// Convert insights to schema-compliant nodes
+	const nodes = insights.map((insight) => {
+		const text = (insight.insights || []).join(" ");
+		const slug = text
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-|-$/g, "")
+			.slice(0, 60);
+
+		return {
+			id: `insight:${slug}`,
+			type: "insight",
+			name: text.slice(0, 100),
+			content: text,
+			tags: [],
+			difficulty: "intermediate",
+			source: insight.source
+				? { type: "insight-index", id: insight.id }
+				: undefined,
+			created_at: insight.recordedAt || new Date().toISOString(),
+		};
+	}).filter((n) => n.content.length > 0);
+
+	// Build edges from sequential insights (builds_on)
+	const edges = [];
+	for (let i = 1; i < nodes.length; i++) {
+		edges.push({
+			source: nodes[i - 1].id,
+			target: nodes[i].id,
+			type: "builds_on",
+			description: `Sequential learning: ${nodes[i - 1].name.slice(0, 30)} → ${nodes[i].name.slice(0, 30)}`,
+		});
+	}
+
 	return {
-		project: {
-			id: projectId,
-			name: projectName,
-			root: projectRoot,
-		},
+		version: "1.0.0",
 		session: {
 			date: today,
-			insight_count: insights.length,
+			summary: `เรียนรู้ ${nodes.length} insights`,
 		},
-		insights: insights,
+		meta: {
+			title: `Session ${today}`,
+			locale: "th",
+			quality_profile: "standard",
+			views: [
+				{ id: "all", label: "ทั้งหมด", focus: ["*"] },
+				{ id: "flow", label: "ลำดับการเรียนรู้", focus: ["flow"] },
+			],
+		},
+		nodes,
+		edges,
 	};
 }
 
