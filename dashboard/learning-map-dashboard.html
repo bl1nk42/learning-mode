@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Map Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: oklch(0.765 0.149 162.5);
+      --primary-foreground: oklch(0.205 0 0);
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.145 0 0);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.145 0 0);
+      --muted: oklch(0.97 0 0);
+      --muted-foreground: oklch(0.556 0 0);
+      --border: oklch(0.922 0 0);
+      --accent: oklch(0.97 0 0);
+      --chart-1: oklch(0.765 0.149 162.5);
+      --chart-2: oklch(0.6 0.118 184.704);
+      --chart-3: oklch(0.398 0.07 227.392);
+    }
+
+    .dark {
+      --background: oklch(0.145 0 0);
+      --foreground: oklch(0.985 0 0);
+      --card: oklch(0.145 0 0);
+      --card-foreground: oklch(0.985 0 0);
+      --muted: oklch(0.269 0 0);
+      --muted-foreground: oklch(0.708 0 0);
+      --border: oklch(0.269 0 0);
+      --accent: oklch(0.269 0 0);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans', sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--foreground);
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      color: var(--muted-foreground);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-card .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-card .label {
+      font-size: 0.875rem;
+      color: var(--muted-foreground);
+      margin-top: 0.5rem;
+    }
+
+    .topics {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .topics h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+
+    .topic-item {
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      background: var(--muted);
+    }
+
+    .topic-item h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--foreground);
+      margin-bottom: 0.5rem;
+    }
+
+    .topic-item p {
+      font-size: 0.875rem;
+      color: var(--muted-foreground);
+    }
+
+    .topic-item .refs {
+      font-size: 0.75rem;
+      color: var(--primary);
+      margin-top: 0.5rem;
+      font-family: monospace;
+    }
+
+    .learning-path {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .learning-path h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+
+    .path-step {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .path-step:last-child {
+      border-bottom: none;
+    }
+
+    .path-step .number {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    .path-step .content {
+      flex: 1;
+    }
+
+    .path-step .title {
+      font-weight: 500;
+      color: var(--foreground);
+    }
+
+    .path-step .desc {
+      font-size: 0.875rem;
+      color: var(--muted-foreground);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: var(--foreground);
+    }
+
+    .theme-toggle:hover {
+      background: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+  <div class="container">
+    <div class="header">
+      <h1>📚 Learning Map</h1>
+      <p>สรุปสิ่งที่เรียนรู้จาก session นี้</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="value" id="insight-count">0</div>
+        <div class="label">Insights</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="topic-count">0</div>
+        <div class="label">Topics</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="connection-count">0</div>
+        <div class="label">Connections</div>
+      </div>
+    </div>
+
+    <div class="topics">
+      <h2>📖 Topics</h2>
+      <div id="topics-list">
+        <p style="color: var(--muted-foreground);">ยังไม่มีข้อมูล</p>
+      </div>
+    </div>
+
+    <div class="learning-path">
+      <h2>🗺️ Learning Path</h2>
+      <div id="path-list">
+        <p style="color: var(--muted-foreground);">ยังไม่มีข้อมูล</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample data - replace with actual data from learning-map.json
+    const sampleData = {
+      topics: [
+        { name: "Context Building", desc: "การสร้างบริบทเฉพาะส่วนที่เกี่ยวข้อง", refs: ["src/context.ts:42"] },
+        { name: "Graph Search", desc: "ค้นหา nodes ที่เกี่ยวข้อง", refs: ["src/search.ts:15"] }
+      ],
+      path: [
+        { title: "Graph Search", desc: "เข้าใจวิธีค้นหาข้อมูล" },
+        { title: "Context Building", desc: "เอา graph search มาใช้สร้างบริบท" }
+      ]
+    };
+
+    function renderData(data) {
+      document.getElementById('insight-count').textContent = data.topics.length;
+      document.getElementById('topic-count').textContent = data.topics.length;
+      document.getElementById('connection-count').textContent = data.path.length - 1;
+
+      const topicsList = document.getElementById('topics-list');
+      topicsList.innerHTML = data.topics.map(topic => `
+        <div class="topic-item">
+          <h3>${topic.name}</h3>
+          <p>${topic.desc}</p>
+          <div class="refs">อ้างอิง: ${topic.refs.join(', ')}</div>
+        </div>
+      `).join('');
+
+      const pathList = document.getElementById('path-list');
+      pathList.innerHTML = data.path.map((step, i) => `
+        <div class="path-step">
+          <div class="number">${i + 1}</div>
+          <div class="content">
+            <div class="title">${step.title}</div>
+            <div class="desc">${step.desc}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const btn = document.querySelector('.theme-toggle');
+      btn.textContent = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+    }
+
+    // Load data from URL parameter or use sample
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataFile = urlParams.get('data');
+
+    if (dataFile) {
+      fetch(dataFile)
+        .then(r => r.json())
+        .then(data => {
+          // Transform learning-map.json to dashboard format
+          const topics = data.insights?.map(i => ({
+            name: i.text?.slice(0, 50) || 'Untitled',
+            desc: i.text || '',
+            refs: i.references?.map(r => `${r.file}:${r.line}`) || []
+          })) || [];
+
+          renderData({ topics, path: topics.map(t => ({ title: t.name, desc: t.desc })) });
+        });
+    } else {
+      renderData(sampleData);
+    }
+  </script>
+</body>
+</html>

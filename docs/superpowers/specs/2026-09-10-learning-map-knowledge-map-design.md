@@ -226,16 +226,35 @@ Analyzes all nodes and identifies genuine relationships:
 1. Generate metadata (session info, views, locale)
 2. Validate nodes against schema
 3. Validate edges against schema
-4. Assemble final session-map.json conforming to `session-map.schema.json`
-5. Render learning-map.md (human-readable)
-6. Write to `~/.learning-mode/session-maps/YYYY-MM-DD.json`
-7. Report to user
+4. **Generate learning tour** (2-phase: structural analysis → pedagogical design)
+5. Assemble final session-map.json conforming to `session-map.schema.json` (including `tour[]`)
+6. Render learning-map.md (human-readable, tour-ordered)
+7. Write to `~/.learning-mode/session-maps/YYYY-MM-DD.json`
+8. Report to user
+
+#### Tour Generation (Phase A + B)
+
+**Phase A — Structural Analysis:**
+- Compute importance ranking (which insights are most referenced)
+- Compute prerequisite chain (topological order from prerequisite_of edges)
+- Detect clusters (groups of related insights)
+- Map difficulty progression (beginner → intermediate → advanced)
+- Map source references (file:line for each insight)
+
+**Phase B — Pedagogical Design:**
+- Choose starting point (most foundational concept)
+- Map prerequisite chain to tour steps (5-15 steps)
+- Integrate clusters into grouped steps
+- Write step descriptions: WHAT + WHY + CONNECTION to previous steps
+- Add context lessons for non-trivial concepts
+- Link source references
 
 #### Views Generated
 
 - `all` — all nodes and edges
 - `flow` — learning order (prerequisite → builds_on → applies_to)
 - `by-type` — grouped by node type
+- `tour` — sequential learning path (from tour[])
 
 #### Merge Behavior (Incremental)
 
@@ -286,23 +305,84 @@ Stop hook triggers
 
 **Current state:** Shows hardcoded sample data.
 
-**Target state:** Consumes `session-map.json` dynamically.
+**Target state:** Consumes `session-map.json` dynamically with interactive Learn Panel.
 
 #### Data Flow
 
 ```
 session-map.json (from ~/.learning-mode/session-maps/)
   → dashboard loads via URL param ?data=path/to/session-map.json
-  → renders: stats, topics, connections, learning path
+  → renders: stats, topics, connections, learning path, learn tour
 ```
 
 #### UI Sections
 
-1. **Stats Bar:** nodes count, edges count, views count
+1. **Stats Bar:** nodes count, edges count, tour steps count
 2. **Topics:** render nodes grouped by active view
 3. **Connections:** render edges as a list or simple graph
 4. **Learning Path:** prerequisite chain from prerequisite_of + builds_on edges
 5. **View Switcher:** tabs for each view in meta.views
+6. **Learn Panel:** interactive tour navigation (from tour[])
+
+#### Learn Panel (following understand-anything's LearnPanel pattern)
+
+Three states:
+
+**State 1 — No tour:**
+```
+🧩
+ยังไม่มี tour สำหรับ session นี้
+รัน /learning-map เพื่อสร้าง tour
+```
+
+**State 2 — Tour ready:**
+```
+Learning Tour
+12 ขั้นตอน · เรียนรู้ทีละขั้น
+
+[ เริ่ม Tour ]
+
+ขั้นตอน:
+1. Graph Search
+2. Context Building
+3. Agent Prompt Design
+...
+```
+
+**State 3 — Tour active:**
+```
+┌─ Tour ─────── 3/12 ─── ออก tour ─┐
+│ ████████░░░░░░░░░░░░ 25%          │
+│                                    │
+│ Context Building Pattern           │
+│                                    │
+│ Understanding that effective       │
+│ context building requires          │
+│ searching relevant nodes first,    │
+│ then expanding 1-hop to connected  │
+│ nodes. Building on graph search    │
+│ from step 1.                       │
+│                                    │
+│ ┌─ Lesson ──────────────────────┐  │
+│ │ BFS visits all neighbors at   │  │
+│ │ current depth before deeper.  │  │
+│ │ 1-hop = immediate neighbors.  │  │
+│ └───────────────────────────────┘  │
+│                                    │
+│ Sources: src/context.ts:45         │
+│          src/search.ts:12          │
+│                                    │
+│ ● ● ● ○ ○ ○ ○ ○ ○ ○ ○ ○         │
+│ [ ก่อนหน้า ]    [ ถัดไป ]        │
+└────────────────────────────────────┘
+```
+
+Navigation:
+- Step dots (clickable for direct jump)
+- Prev/Next buttons (sequential)
+- Progress bar + counter
+- Source reference pills (clickable → highlight in code view)
+- Context lesson box (when present)
 
 #### Session Mode
 
@@ -311,12 +391,119 @@ session-map.json (from ~/.learning-mode/session-maps/)
 
 ---
 
+## 3.7 Teaching Layer (Inspired by Understand-Anything Tour Pattern)
+
+The current design produces a flat session-map.json. But **the flow might be correct while the teaching is wrong** — the map shows what was learned but doesn't teach it well.
+
+This section adds a pedagogical teaching layer on top of the session map.
+
+### 3.7.1 Problem: Correct Flow ≠ Good Teaching
+
+Current `learning-map.md` output is a flat list of topics. It tells you WHAT was learned but not HOW to teach it. Good teaching requires:
+
+- **Sequential steps** that build on each other (not random list)
+- **WHY this matters** for each step (not just WHAT)
+- **Connection to previous steps** ("Building on X from step 2...")
+- **Contextual lessons** (language-specific or concept-specific notes)
+- **Source references** (exact file:line where the learning happened)
+
+### 3.7.2 Learning Tour (from tour-builder pattern)
+
+Add a `tour[]` array to session-map.json, parallel to the existing `nodes`/`edges`:
+
+```json
+{
+  "version": "1.0.0",
+  "session": { ... },
+  "meta": { ... },
+  "nodes": [...],
+  "edges": [...],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Context Building Pattern",
+      "description": "Understanding that effective context building requires searching relevant nodes first, then expanding 1-hop to connected nodes. This matters because it prevents sending entire codebase to LLM, saving tokens and improving relevance.",
+      "nodeIds": ["insight:context-building", "insight:graph-search"],
+      "contextLesson": "Graph search uses BFS to find relevant nodes. The 1-hop expansion means checking direct neighbors of matched nodes — not the entire graph.",
+      "sourceRefs": ["src/context-builder.ts:45", "src/search.ts:12"]
+    }
+  ]
+}
+```
+
+### 3.7.3 Tour Generation: 2-Phase Approach
+
+Following understand-anything's tour-builder pattern:
+
+**Phase A — Structural Analysis (Script):**
+
+`collect-facets.js` computes pedagogical signals from raw data:
+
+| Signal | What it computes | Use in tour |
+|--------|-----------------|-------------|
+| Importance ranking | Which insights are most referenced/foundational | Teach important concepts first |
+| Prerequisite chain | Topological order from `prerequisite_of` edges | Ensure correct learning order |
+| Cluster detection | Groups of related insights | Explain related concepts together |
+| Difficulty progression | beginner → intermediate → advanced ordering | Scaffold difficulty naturally |
+| Source mapping | Which files/lines each insight references | Link back to evidence |
+
+Output: `pedagogy-signals.json` (passed to Agent 3)
+
+**Phase B — Pedagogical Design (Agent 3: map-generator):**
+
+Agent 3 uses structural signals to design the tour:
+
+1. **Choose starting point** — most foundational concept (highest importance, beginner difficulty)
+2. **Map prerequisite chain to tour steps** — use topological order as backbone
+3. **Integrate clusters** — group related insights into single steps when they appear at same level
+4. **Write step descriptions** using template:
+   - WHAT: "This insight explains..."
+   - WHY: "This matters because..."
+   - CONNECTION: "Building on [step N]..."
+5. **Add context lessons** — language-specific or concept-specific notes for non-trivial steps
+6. **Link source references** — exact file:line for each step
+
+### 3.7.4 Step Description Quality Standards
+
+Following understand-anything's tour-builder quality standards:
+
+**Bad step descriptions:**
+- "Learned about graph search"
+- "Context building insight"
+- "Practice exercise"
+
+**Good step descriptions:**
+- "Understanding that effective context building requires searching relevant nodes first, then expanding 1-hop to connected nodes. This prevents sending entire codebase to LLM, saving tokens and improving relevance. Building on the graph search concept from step 1."
+
+**Context lessons (optional, for non-trivial steps):**
+- "Graph search uses BFS traversal. BFS visits all neighbors at current depth before moving deeper — this ensures we find all directly relevant nodes before expanding further."
+- "The 1-hop expansion pattern means checking only immediate neighbors, not the full transitive closure. This is a deliberate trade-off: we sacrifice completeness for speed and token efficiency."
+
+### 3.7.5 Dashboard Learn Panel
+
+Following understand-anything's LearnPanel pattern:
+
+**Three states:**
+1. **No tour available** — show "ยังไม่มี tour" message
+2. **Tour ready** — show step list + "เริ่ม Tour" button
+3. **Tour active** — step-by-step navigation with:
+   - Progress bar + step counter (1/N)
+   - Step title + description (rendered as Markdown)
+   - Context lesson (if present) in highlighted box
+   - Source reference pills (clickable → opens file)
+   - Prev/Next buttons + step dots
+
+**Navigation:** dots for direct jump, prev/next for sequential
+
+---
+
 ## 4. Data Contract Between Components
 
 ```
 collect-facets.js
-  output → raw-data.json
+  output → raw-data.json + pedagogy-signals.json
   format: { project, session, sources: { insight_entries[], learning_records[], exercises[], wiki_entries[], session_context }, stats }
+  pedagogy: { importance_ranking[], prerequisite_chain[], clusters[], difficulty_progression, source_mapping{} }
 
 insight-collector
   input ← raw-data.json
@@ -329,9 +516,9 @@ relationship-builder
   format: { edges: [{ source, target, type, description }], stats }
 
 map-generator
-  input ← nodes.json + edges.json
+  input ← nodes.json + edges.json + pedagogy-signals.json
   output → session-map.json + learning-map.md
-  format: session-map.schema.json conformant
+  format: session-map.schema.json conformant (with tour[] array)
 ```
 
 ---
@@ -340,13 +527,15 @@ map-generator
 
 | File | Action | Description |
 |------|--------|-------------|
-| `scripts/learning-map/collect-facets.js` | Refactor | Read 5 sources, produce raw-data.json |
+| `schemas/session-map.schema.json` | Update | Add `tour[]` array with pedagogical steps |
+| `scripts/learning-map/collect-facets.js` | Refactor | Read 5 sources, produce raw-data.json + pedagogy-signals.json |
 | `scripts/learning-map/collect-facets.py` | Update | Mirror JS changes |
 | `scripts/learning-map/config.js` | Update | Add source paths config |
 | `scripts/learning-map/config.py` | Update | Mirror JS changes |
 | `hooks/auto-collect-learning-map.js` | Refactor | Wire to agent pipeline |
-| `dashboard/learning-map-dashboard.html` | Refactor | Consume session-map.json |
-| `skills/learning-map/SKILL.md` | Update | Reference agent defs, clarify pipeline |
+| `dashboard/learning-map-dashboard.html` | Refactor | Consume session-map.json with Learn Panel |
+| `skills/learning-map/SKILL.md` | Update | Reference agent defs, clarify pipeline, add tour generation |
+| `skills/learning-map/agents/map-generator.md` | Update | Add 2-phase tour generation (structural analysis → pedagogical design) |
 
 ---
 

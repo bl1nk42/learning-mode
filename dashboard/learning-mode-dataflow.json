@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Learning Mode - Data Flow",
+    "locale": "th",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "full", "label": "ภาพรวมทั้งหมด", "focus": ["user", "learning-mode", "record-insights", "insight-index", "insight-wiki", "teach", "learning-map", "session-maps"] },
+      { "id": "insight-flow", "label": "กระแส Insight", "focus": ["user", "learning-mode", "record-insights", "insight-index", "learning-map"] },
+      { "id": "teaching-flow", "label": "กระแสการสอน", "focus": ["user", "teach", "learning-records", "learning-map"] }
+    ]
+  },
+  "stages": [
+    { "label": "User Interaction" },
+    { "label": "Capture" },
+    { "label": "Storage" },
+    { "label": "Curation" },
+    { "label": "Visualization" }
+  ],
+  "nodes": [
+    { "id": "user", "type": "external", "label": "User", "sublabel": "ผู้ใช้", "stage": 0, "row": 0 },
+    { "id": "learning-mode", "type": "backend", "label": "Learning Mode", "sublabel": "Main Skill", "stage": 0, "row": 1 },
+    { "id": "record-insights", "type": "backend", "label": "record-insights.js", "sublabel": "Stop Hook", "stage": 1, "row": 0 },
+    { "id": "insight-index", "type": "database", "label": "insight-index.jsonl", "sublabel": "~/.learning-mode/", "stage": 2, "row": 0 },
+    { "id": "local-insights", "type": "database", "label": "insights.jsonl", "sublabel": ".learning-mode/ (local)", "stage": 2, "row": 1 },
+    { "id": "insight-wiki", "type": "backend", "label": "insight-wiki", "sublabel": "Curate Topic Wikis", "stage": 3, "row": 0 },
+    { "id": "insight-wikis", "type": "database", "label": "insight-wikis/", "sublabel": "~/.learning-mode/", "stage": 3, "row": 1 },
+    { "id": "teach", "type": "backend", "label": "teach", "sublabel": "Teaching Engine", "stage": 3, "row": 2 },
+    { "id": "learning-records", "type": "database", "label": "learning-records/", "sublabel": "~/.learning-mode/teach/", "stage": 3, "row": 3 },
+    { "id": "exercises", "type": "database", "label": "exercises/", "sublabel": "~/.learning-mode/teach/", "stage": 3, "row": 4 },
+    { "id": "learning-map", "type": "backend", "label": "learning-map", "sublabel": "Collect & Build Map", "stage": 4, "row": 0 },
+    { "id": "session-maps", "type": "database", "label": "session-maps/", "sublabel": "~/.learning-mode/", "stage": 4, "row": 1 }
+  ],
+  "flows": [
+    { "from": "user", "to": "learning-mode", "label": "interacts", "classification": "input" },
+    { "from": "learning-mode", "to": "user", "label": "★ Insight blocks", "classification": "output" },
+    { "from": "learning-mode", "to": "record-insights", "label": "Stop hook triggers", "classification": "trigger" },
+    { "from": "record-insights", "to": "insight-index", "label": "appends insights", "classification": "write" },
+    { "from": "record-insights", "to": "local-insights", "label": "appends insights", "classification": "write" },
+    { "from": "insight-index", "to": "insight-wiki", "label": "reads insights", "classification": "read" },
+    { "from": "insight-wiki", "to": "insight-wikis", "label": "writes curated wikis", "classification": "write" },
+    { "from": "teach", "to": "learning-records", "label": "writes records", "classification": "write" },
+    { "from": "teach", "to": "exercises", "label": "writes exercises", "classification": "write" },
+    { "from": "insight-index", "to": "learning-map", "label": "reads insights", "classification": "read" },
+    { "from": "learning-records", "to": "learning-map", "label": "reads records", "classification": "read" },
+    { "from": "exercises", "to": "learning-map", "label": "reads exercises", "classification": "read" },
+    { "from": "learning-map", "to": "session-maps", "label": "writes session map", "classification": "write" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Capture Layer", "items": ["record-insights.js extracts ★ Insight blocks", "Writes to both local and global storage"] },
+    { "dot": "emerald", "title": "Storage Layer", "items": ["insight-index.jsonl (global)", ".learning-mode/insights.jsonl (local per project)"] },
+    { "dot": "violet", "title": "Curation Layer", "items": ["insight-wiki curates topic wikis", "teach manages learning records"] },
+    { "dot": "amber", "title": "Visualization Layer", "items": ["learning-map collects all pieces", "session-maps stores final output"] }
+  ]
+}
