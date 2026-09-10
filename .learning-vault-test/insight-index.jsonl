@@ -1,0 +1,2 @@
+{"id":"test1","insights":["Understanding context building requires searching relevant nodes first"],"references":[{"file":"src/context.ts","line":42}],"source":{"project":"/mnt/d/01work/Active/workspace/learning-mode"},"recordedAt":"2026-09-10T10:00:00Z"}
+{"id":"test2","insights":["Graph search expands 1-hop to find connected nodes"],"references":[{"file":"src/search.ts","line":15}],"source":{"project":"/mnt/d/01work/Active/workspace/learning-mode"},"recordedAt":"2026-09-10T10:01:00Z"}

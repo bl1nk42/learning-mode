@@ -527,13 +527,13 @@ map-generator
 
 | File | Action | Description |
 |------|--------|-------------|
-| `schemas/session-map.schema.json` | Update | Add `tour[]` array with pedagogical steps |
-| `scripts/learning-map/collect-facets.js` | Refactor | Read 5 sources, produce raw-data.json + pedagogy-signals.json |
-| `scripts/learning-map/collect-facets.py` | Update | Mirror JS changes |
-| `scripts/learning-map/config.js` | Update | Add source paths config |
-| `scripts/learning-map/config.py` | Update | Mirror JS changes |
-| `hooks/auto-collect-learning-map.js` | Refactor | Wire to agent pipeline |
-| `dashboard/learning-map-dashboard.html` | Refactor | Consume session-map.json with Learn Panel |
+| `schemas/session-map.schema.json` | Create | Session map schema with nodes, edges, tour arrays |
+| `scripts/learning-map/collect-facets.js` | Create | Read 5 sources, produce raw-data.json + pedagogy-signals.json |
+| `scripts/learning-map/collect-facets.py` | Create | Mirror JS implementation |
+| `scripts/learning-map/config.js` | Create | Source paths configuration |
+| `scripts/learning-map/config.py` | Create | Mirror JS config |
+| `hooks/auto-collect-learning-map.js` | Create | Wire to agent pipeline |
+| `dashboard/learning-map-dashboard.html` | Create | Consume session-map.json with Learn Panel |
 | `skills/learning-map/SKILL.md` | Update | Reference agent defs, clarify pipeline, add tour generation |
 | `skills/learning-map/agents/map-generator.md` | Update | Add 2-phase tour generation (structural analysis → pedagogical design) |
 

@@ -301,14 +301,32 @@
       fetch(dataFile)
         .then(r => r.json())
         .then(data => {
-          // Transform learning-map.json to dashboard format
-          const topics = data.insights?.map(i => ({
-            name: i.text?.slice(0, 50) || 'Untitled',
-            desc: i.text || '',
-            refs: i.references?.map(r => `${r.file}:${r.line}`) || []
-          })) || [];
+          // Transform session-map.json to dashboard format
+          const topics = (data.nodes || []).map(n => ({
+            name: n.name || 'Untitled',
+            desc: n.content || '',
+            refs: n.source ? [typeof n.source === 'string' ? n.source : `${n.source.file}:${n.source.line}`] : [],
+            type: n.type,
+            difficulty: n.difficulty,
+            tags: n.tags || []
+          }));
 
-          renderData({ topics, path: topics.map(t => ({ title: t.name, desc: t.desc })) });
+          const path = (data.tour || []).sort((a, b) => a.order - b.order).map(t => ({
+            title: t.title,
+            desc: t.description
+          }));
+
+          // If no tour, derive path from prerequisite_of edges
+          if (path.length === 0) {
+            const prereqEdges = (data.edges || []).filter(e => e.type === 'prerequisite_of' || e.type === 'builds_on');
+            const nodeMap = Object.fromEntries(topics.map(t => [t.name, t]));
+            path.push(...prereqEdges.slice(0, 10).map(e => ({
+              title: nodeMap[e.source]?.name || e.source,
+              desc: e.description || ''
+            })));
+          }
+
+          renderData({ topics, path });
         });
     } else {
       renderData(sampleData);

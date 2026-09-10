@@ -104,7 +104,18 @@
             "enum": ["beginner", "intermediate", "advanced"]
           },
           "source": {
-            "type": "string"
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "id": { "type": "string" },
+                  "file": { "type": "string" },
+                  "line": { "type": "integer" }
+                }
+              }
+            ]
           },
           "created_at": {
             "type": "string",
@@ -126,7 +137,7 @@
             "type": "string"
           },
           "type": {
-            "enum": ["builds_on", "related_to", "contradicts", "prerequisite_of"]
+            "enum": ["builds_on", "related_to", "contradicts", "prerequisite_of", "applies_to"]
           },
           "description": {
             "type": "string",

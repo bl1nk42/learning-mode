@@ -60,9 +60,8 @@ Collect the small pieces Learning Mode created throughout a session and assemble
 ## Output
 
 ```
-~/.learning-mode/projects/<project-id>/
-├── learning-map.md      ← For PEOPLE to read
-└── learning-map.json    ← For agents to use
+~/.learning-mode/session-maps/<project-id>-YYYY-MM-DD.json  ← Session map (schema-valid)
+~/.learning-mode/projects/<project-id>/learning-map.md      ← Human-readable summary
 ```
 
 ## Example Output (learning-map.md)

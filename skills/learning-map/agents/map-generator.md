@@ -106,7 +106,8 @@ From the session context, determine:
 	"views": [
 		{ "id": "all", "label": "ทั้งหมด", "focus": ["*"] },
 		{ "id": "flow", "label": "ลำดับการเรียนรู้", "focus": ["flow"] },
-		{ "id": "by-type", "label": "ตามประเภท", "focus": ["by-type"] }
+		{ "id": "by-type", "label": "ตามประเภท", "focus": ["by-type"] },
+		{ "id": "tour", "label": "Learning Tour", "focus": ["tour"] }
 	]
 }
 ```
@@ -116,6 +117,7 @@ From the session context, determine:
 - `all`: Show all nodes and edges
 - `flow`: Show nodes in learning order (prerequisite → builds_on → applies_to)
 - `by-type`: Group nodes by type (insights, exercises, lessons)
+- `tour`: Show sequential learning path from tour[]
 
 ---
 
@@ -192,7 +194,7 @@ If validation fails:
 
 ## Step 7 -- Write File
 
-Write to `$LEARNING_MODE_HOME/session-maps/YYYY-MM-DD.json`.
+Write to `$LEARNING_MODE_HOME/session-maps/<project-id>-YYYY-MM-DD.json`.
 
 If the file exists:
 

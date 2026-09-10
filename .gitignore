@@ -1,3 +1,4 @@
 .learning-mode/
 .pytest_cache/
 node_modules/
+scripts/learning-map/__pycache__/config.cpython-314.pyc
