@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Learning Mode Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+  <style>
+    :root{--ink:#172033;--muted:#667085;--line:#e4e7ec;--bg:#f6f8fb;--panel:#fff;--blue:#2563eb;--green:#15803d;--red:#b42318;--amber:#b54708}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+    .wrap{max-width:1240px;margin:auto;padding:28px}.hero{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px}.eyebrow{font-size:12px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--blue)}h1{margin:4px 0;font-size:32px;line-height:1.15}.muted{color:var(--muted)}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}.controls label{font-weight:650}.controls select,.controls button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:8px 10px;color:var(--ink)}.controls button{cursor:pointer}.controls button:hover{border-color:var(--blue);color:var(--blue)}
+    .status{padding:8px 13px;border-radius:999px;background:#fee4e2;color:var(--red);font-weight:750;white-space:nowrap}.status.good{background:#dcfae6;color:var(--green)}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 3px 12px #1018280a}.kpi-label{color:var(--muted);font-size:13px}.kpi-value{font-size:30px;font-weight:780;margin-top:4px}.kpi-note{font-size:12px;color:var(--muted)}
+    .charts{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-bottom:14px}.chart-box{height:300px;position:relative}.panel h2{font-size:17px;margin:0 0 14px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px 8px;vertical-align:top}th{font-size:12px;color:var(--muted);text-transform:uppercase;cursor:pointer;white-space:nowrap}th:hover{color:var(--blue)}code{font-size:12px;word-break:break-word}.chip{display:inline-block;padding:3px 9px;border-radius:999px;background:#eef2f6;color:#344054;font-size:12px}.chip.good{background:#dcfae6;color:var(--green)}.chip.bad{background:#fee4e2;color:var(--red)}.empty{color:var(--green);font-weight:650;padding:12px 0}.footer{margin-top:16px;color:var(--muted);font-size:12px}
+    @media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}.hero{display:block}.status{display:inline-block;margin-top:12px}}@media(max-width:520px){.wrap{padding:16px}.grid{grid-template-columns:1fr 1fr}.kpi-value{font-size:24px}.controls>*{width:100%}}
+    @media print{body{background:#fff}.panel{box-shadow:none}.controls{display:none}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <div><div class="eyebrow">Learning Mode · Learning analytics</div><h1 id="title">Learning plan</h1><div class="muted" id="subtitle"></div></div>
+      <div id="status" class="status">NEEDS ATTENTION</div>
+    </header>
+    <section class="controls" aria-label="Dashboard filters">
+      <label for="issue-filter">Findings</label><select id="issue-filter"><option value="all">All findings</option><option value="error">Errors only</option><option value="none">No findings</option></select>
+      <label for="project-filter">Project</label><select id="project-filter"><option value="all">All projects</option></select>
+      <button id="reset">Reset filters</button><span class="muted" id="filter-summary"></span>
+    </section>
+    <section class="grid" aria-label="Key metrics">
+      <article class="panel"><div class="kpi-label">Evidence IDs</div><div class="kpi-value" id="kpi-evidence">0</div><div class="kpi-note">unique evidence in the wiki</div></article>
+      <article class="panel"><div class="kpi-label">Indexed insights</div><div class="kpi-value" id="kpi-indexed">0</div><div class="kpi-note">available to cross-project recall</div></article>
+      <article class="panel"><div class="kpi-label">Source coverage</div><div class="kpi-value" id="kpi-sources">0%</div><div class="kpi-note">evidence IDs linked to sources</div></article>
+      <article class="panel"><div class="kpi-label">Visible findings</div><div class="kpi-value" id="kpi-findings">0</div><div class="kpi-note">output checks requiring attention</div></article>
+    </section>
+    <section class="charts">
+      <article class="panel"><h2>Learning phase readiness</h2><div class="chart-box"><canvas id="phase-chart" aria-label="Learning phase readiness chart"></canvas></div></article>
+      <article class="panel"><h2>Indexed insights by project</h2><div class="chart-box"><canvas id="project-chart" aria-label="Indexed insights by project chart"></canvas></div></article>
+    </section>
+    <section class="panel"><h2>Validation findings <span class="muted" id="table-count"></span></h2><div class="table-wrap"><table id="findings-table"><thead><tr><th data-key="severity">Severity</th><th data-key="code">Code</th><th data-key="subject">Subject</th></tr></thead><tbody></tbody></table></div></section>
+    <section class="panel" style="margin-top:14px"><h2>Artifact integrity</h2><div class="table-wrap"><table><tbody><tr><th>Canvas schema</th><td id="schema-state"></td></tr><tr><th>Receipt</th><td id="receipt-state"></td></tr><tr><th>Source bundle SHA-256</th><td><code id="source-hash"></code></td></tr><tr><th>Canvas SHA-256</th><td><code id="canvas-hash"></code></td></tr></tbody></table></div></section>
+    <footer class="footer">Generated view. Wiki Markdown, insight index, Canvas and receipt remain the source artifacts. Generated at <span id="generated-at"></span>.</footer>
+  </main>
+  <script>
+    const DATA = __DATA__;
+    class LearningDashboard {
+      constructor(data){this.data=data;this.sortKey='severity';this.sortDir=1;this.charts={};this.issueFilter='all';this.projectFilter='all';this.init()}
+      init(){document.getElementById('title').textContent=this.data.wiki.title;document.getElementById('subtitle').textContent=`${this.data.wiki.path} · ${this.data.metrics.beatSections} beat sections`;document.getElementById('generated-at').textContent=this.data.generatedAt;this.populateProjects();this.bind();this.renderAll()}
+      populateProjects(){const select=document.getElementById('project-filter');Object.keys(this.data.projectCounts).sort().forEach(p=>{const option=document.createElement('option');option.value=p;option.textContent=p;select.appendChild(option)})}
+      bind(){document.getElementById('issue-filter').onchange=e=>{this.issueFilter=e.target.value;this.renderAll()};document.getElementById('project-filter').onchange=e=>{this.projectFilter=e.target.value;this.renderAll()};document.getElementById('reset').onclick=()=>{this.issueFilter='all';this.projectFilter='all';document.getElementById('issue-filter').value='all';document.getElementById('project-filter').value='all';this.renderAll()};document.querySelectorAll('th[data-key]').forEach(th=>th.onclick=()=>{const key=th.dataset.key;if(this.sortKey===key)this.sortDir*=-1;else{this.sortKey=key;this.sortDir=1}this.renderTable()})}
+      visibleIssues(){let rows=this.data.validation.issues;if(this.issueFilter==='none')return [];if(this.issueFilter==='error')rows=rows.filter(x=>x.severity==='error');if(this.projectFilter!=='all')rows=rows.filter(x=>String(x.subject).includes(this.projectFilter));return [...rows].sort((a,b)=>String(a[this.sortKey]).localeCompare(String(b[this.sortKey]))*this.sortDir)}
+      renderAll(){this.renderKpis();this.renderCharts();this.renderTable();this.renderIntegrity();this.renderStatus()}
+      renderKpis(){const issues=this.visibleIssues();const total=this.data.metrics.evidenceIds;const linked=this.data.metrics.sourceLinks;document.getElementById('kpi-evidence').textContent=total.toLocaleString();document.getElementById('kpi-indexed').textContent=this.data.metrics.indexedInsights.toLocaleString();document.getElementById('kpi-sources').textContent=(total?Math.round(linked/total*100):100)+'%';document.getElementById('kpi-findings').textContent=issues.length.toLocaleString();document.getElementById('filter-summary').textContent=`Showing ${issues.length} finding${issues.length===1?'':'s'}`}
+      renderCharts(){if(this.charts.phase)this.charts.phase.destroy();if(this.charts.project)this.charts.project.destroy();this.charts.phase=new Chart(document.getElementById('phase-chart'),{type:'bar',data:{labels:this.data.phases.map(x=>x.name),datasets:[{label:'Ready',data:this.data.phases.map(x=>x.present?1:0),backgroundColor:this.data.phases.map(x=>x.present?'#15803d':'#b42318'),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.raw?'Ready':'Missing'}}},scales:{y:{beginAtZero:true,max:1,ticks:{stepSize:1,callback:v=>v?'ready':'missing'}},x:{grid:{display:false}}}}});const labels=Object.keys(this.data.projectCounts);this.charts.project=new Chart(document.getElementById('project-chart'),{type:'doughnut',data:{labels:labels.length?labels:['No indexed projects'],datasets:[{data:labels.length?labels.map(x=>this.data.projectCounts[x]):[1],backgroundColor:['#2563eb','#7c3aed','#0891b2','#15803d','#b54708','#db2777'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom'}}}})}
+      renderTable(){const rows=this.visibleIssues();const tbody=document.querySelector('#findings-table tbody');document.getElementById('table-count').textContent=`(${rows.length})`;tbody.innerHTML=rows.length?rows.map(x=>`<tr><td><span class="chip ${x.severity==='error'?'bad':''}">${x.severity}</span></td><td><code>${this.escape(x.code)}</code></td><td><code>${this.escape(x.subject)}</code></td></tr>`).join(''):'<tr><td colspan="3" class="empty">No findings match the current filters.</td></tr>'}
+      renderIntegrity(){const yes='<span class="chip good">valid</span>',no='<span class="chip bad">needs attention</span>';document.getElementById('schema-state').innerHTML=this.data.validation.schemaOk?yes:no;document.getElementById('receipt-state').innerHTML=this.data.validation.receiptCurrent?'<span class="chip good">current</span>':no;document.getElementById('source-hash').textContent=this.data.validation.sourceBundleSha256;document.getElementById('canvas-hash').textContent=this.data.validation.canvasSha256}
+      renderStatus(){const ok=this.data.validation.ok;const el=document.getElementById('status');el.textContent=ok?'VALIDATED':'NEEDS ATTENTION';el.className='status'+(ok?' good':'')}
+      escape(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+    }
+    new LearningDashboard(DATA);
+  </script>
+</body>
+</html>

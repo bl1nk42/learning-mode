@@ -111,3 +111,21 @@ The bundled badge displays the current state and count of recorded insights. Add
 ```json
 { "statusLine": { "type": "command", "command": "sh /absolute/path/to/learning-mode/hooks/learning-mode-statusline.sh" } }
 ```
+
+## Artifact validation and dashboard
+
+Learning-plan output is checked in two layers: the wiki checker verifies required evidence, phase nodes, edge references, and source links; then it validates the canvas against the JSON Schema and recomputes the source-bundle and canvas SHA-256 values recorded in `learning-plan.receipt.json`. Use `--json` when an agent needs machine-readable diagnostics:
+
+```sh
+node scripts/check-insight-wiki.js <wiki-dir> <insight-index.jsonl> --json
+```
+
+The dashboard is designed first as the editable HTML source template at `dashboard/learning-mode-dashboard.html`. The generator injects the current artifact snapshot into its `__DATA__` slot, so layout and interaction logic remain reviewable in HTML rather than being hidden in a JavaScript string.
+
+Generate a user-facing HTML dashboard from the same artifacts:
+
+```sh
+node scripts/generate-learning-mode-dashboard.js <wiki-dir> <insight-index.jsonl> [output.html]
+```
+
+The dashboard is an interactive generated view, not a source of truth. It includes synchronized findings/project filters, Chart.js phase and project charts, sortable findings columns, KPI cards, and schema/receipt integrity details. Regenerate it after changing the wiki or canvas.

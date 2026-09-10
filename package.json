@@ -1,6 +1,11 @@
 {
   "name": "learning-mode",
   "private": true,
+  "scripts": {
+    "test": "python3 -B -m pytest -q",
+    "validate-wiki": "node scripts/check-insight-wiki.js",
+    "dashboard": "node scripts/generate-learning-mode-dashboard.js"
+  },
   "devDependencies": {},
   "dependencies": {
     "ajv": "^8.20.0"

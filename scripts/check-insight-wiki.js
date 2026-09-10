@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { validateCanvas } = require('./validate-learning-plan-canvas');
 
 const [wikiDir, indexFile, ...args] = process.argv.slice(2);
@@ -25,6 +26,12 @@ const index = new Map(fs.readFileSync(indexFile, 'utf8').trim().split('\n').map(
 }));
 
 const required = ['README.md', 'evidence.md', 'beats.md', 'sources.md'];
+function sha256(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+function sourceBundle() {
+  return required.map((name) => name + '\0' + fs.readFileSync(path.join(wikiDir, name), 'utf8')).join('\0');
+}
 let phaseChain;
 try {
   phaseChain = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'learning-plan-canvas.schema.json'), 'utf8'))['x-learning-mode-phase-chain'];
@@ -170,6 +177,17 @@ if (canvas.edges.some((edge) => !edge.id || !nodeIds.has(edge.fromNode) || !node
   });
 }
 
+const schemaResult = validateCanvas(canvas);
+if (!schemaResult.ok) {
+  fail({
+    code: 'INVALID_CANVAS_SCHEMA',
+    severity: 'error',
+    subject: 'canvas.schema',
+    evidence: { errors: schemaResult.errors },
+    supportedFixes: [{ action: 'regenerate_canvas', command: 'node scripts/generate-learning-plan-canvas.js <wikiDir> --index <insight-index.jsonl>' }]
+  });
+}
+
 const evidence = fs.readFileSync(path.join(wikiDir, 'evidence.md'), 'utf8');
 const beats = fs.readFileSync(path.join(wikiDir, 'beats.md'), 'utf8');
 const sources = fs.readFileSync(path.join(wikiDir, 'sources.md'), 'utf8');
@@ -217,6 +235,35 @@ if (missingFromSources.length > 0) {
     subject: 'sources.md',
     evidence: { missing: missingFromSources, totalInEvidence: ids.length },
     supportedFixes: [{ action: 'regenerate_sources', command: 'Invoke writing-beats/writing-shape to refresh sources.md' }]
+  });
+}
+
+const receiptPath = path.join(wikiDir, 'learning-plan.receipt.json');
+let receipt;
+try {
+  receipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+} catch (e) {
+  fail({
+    code: 'MISSING_OR_INVALID_RECEIPT',
+    severity: 'error',
+    subject: 'learning-plan.receipt.json',
+    evidence: { error: e.message },
+    supportedFixes: [{ action: 'regenerate_canvas', command: 'node scripts/generate-learning-plan-canvas.js <wikiDir> --index <insight-index.jsonl>' }]
+  });
+}
+const canvasText = fs.readFileSync(path.join(wikiDir, 'learning-plan.canvas'), 'utf8');
+const expectedSourceHash = sha256(sourceBundle());
+const expectedCanvasHash = sha256(canvasText);
+if (receipt.canvasPath !== 'learning-plan.canvas' || receipt.sourceBundleSha256 !== expectedSourceHash || receipt.canvasSha256 !== expectedCanvasHash) {
+  fail({
+    code: 'STALE_CANVAS_RECEIPT',
+    severity: 'error',
+    subject: 'learning-plan.receipt.json',
+    evidence: {
+      expected: { canvasPath: 'learning-plan.canvas', sourceBundleSha256: expectedSourceHash, canvasSha256: expectedCanvasHash },
+      actual: receipt,
+    },
+    supportedFixes: [{ action: 'regenerate_canvas', command: 'node scripts/generate-learning-plan-canvas.js <wikiDir> --index <insight-index.jsonl>' }]
   });
 }
 

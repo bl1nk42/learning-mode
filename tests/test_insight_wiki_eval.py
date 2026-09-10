@@ -213,6 +213,46 @@ def test_generator_validates_canvas_against_the_declared_json_schema(tmp_path):
     assert json.loads(result.stdout) == {"ok": True}
 
 
+def test_checker_reports_stale_canvas_receipt(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    (wiki / "evidence.md").write_text("0123456789abcdef\nchanged after generation\n", encoding="utf-8")
+
+    diagnostic = json_diagnostic(wiki, index)
+
+    assert diagnostic["code"] == "STALE_CANVAS_RECEIPT"
+    assert diagnostic["subject"] == "learning-plan.receipt.json"
+    assert diagnostic["supportedFixes"][0]["action"] == "regenerate_canvas"
+
+
+def test_dashboard_embeds_validation_metrics_and_is_standalone(tmp_path):
+    wiki, index = valid_wiki(tmp_path)
+    dashboard = tmp_path / "dashboard.html"
+    result = subprocess.run(
+        ["node", "scripts/generate-learning-mode-dashboard.js", wiki, index, dashboard],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    html = dashboard.read_text(encoding="utf-8")
+    assert "Learning Mode Dashboard" in html
+    assert '"evidenceIds":1' in html
+    assert '"receiptCurrent":true' in html
+    assert "No findings match the current filters" in html
+
+
+def test_dashboard_template_defines_interactive_learning_view():
+    template = (ROOT / "dashboard" / "learning-mode-dashboard.html").read_text(encoding="utf-8")
+
+    assert "<select id=\"issue-filter\">" in template
+    assert "<select id=\"project-filter\">" in template
+    assert "data-key=\"severity\"" in template
+    assert "new Chart" in template
+    assert "renderAll()" in template
+    assert "__DATA__" in template
+
+
 def test_canvas_schema_rejects_an_unknown_node_property(tmp_path):
     wiki, _ = valid_wiki(tmp_path)
     canvas_path = wiki / "learning-plan.canvas"
