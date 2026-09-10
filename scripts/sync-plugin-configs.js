@@ -33,6 +33,8 @@ function makeClaudeHooks() {
 	const hooks = {};
 	for (const [event, entries] of Object.entries(SOURCE.hooks)) {
 		hooks[event] = entries.map((h) => ({
+			...(h.id ? { id: h.id } : {}),
+			...(h.description ? { description: h.description } : {}),
 			hooks: [
 				{
 					type: "command",
@@ -50,6 +52,8 @@ function makeGenericHooks() {
 	const hooks = {};
 	for (const [event, entries] of Object.entries(SOURCE.hooks)) {
 		hooks[event] = entries.map((h) => ({
+			...(h.id ? { id: h.id } : {}),
+			...(h.description ? { description: h.description } : {}),
 			hooks: [
 				{
 					type: "command",
@@ -65,19 +69,47 @@ function makeGenericHooks() {
 
 function makeMarketplace(extra = {}) {
 	return {
-		"$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
 		name: SOURCE.name,
-		description: SOURCE.marketplaceDescription,
+		owner: SOURCE.author,
+		metadata: {
+			description: SOURCE.marketplaceDescription,
+		},
 		plugins: [
 			{
 				name: SOURCE.name,
-				description: "Explain meaningful trade-offs while building.",
 				source: "./",
+				description: SOURCE.marketplaceDescription,
+				version: SOURCE.version,
+				author: SOURCE.author,
+				homepage: SOURCE.homepage,
+				repository: SOURCE.repository,
+				license: SOURCE.license,
+				keywords: SOURCE.keywords,
 				category: "productivity",
+				tags: SOURCE.keywords,
+				strict: false,
 				...extra,
 			},
 		],
 	};
+}
+
+function makeCursorHooks() {
+	const cursorEventMap = {
+		SessionStart: "sessionStart",
+		Stop: "sessionEnd",
+	};
+	const hooks = {};
+	for (const [event, entries] of Object.entries(SOURCE.hooks)) {
+		const cursorEvent = cursorEventMap[event];
+		if (!cursorEvent) continue;
+		hooks[cursorEvent] = entries.map((h) => ({
+			command: `node .cursor/hooks/${h.script}`,
+			event: cursorEvent,
+			...(h.description ? { description: h.description } : {}),
+		}));
+	}
+	return { version: 1, hooks };
 }
 
 // --- Targets ---
@@ -86,7 +118,11 @@ const targets = [
 		path: "plugin.json",
 		content: () =>
 			JSON.stringify(
-				makePluginJson({ contextFileName: "AGENTS.md" }),
+				makePluginJson({
+					contextFileName: "AGENTS.md",
+					keywords: SOURCE.keywords,
+					license: SOURCE.license,
+				}),
 				null,
 				2,
 			) + "\n",
@@ -96,8 +132,13 @@ const targets = [
 		content: () =>
 			JSON.stringify(
 				makePluginJson({
-					author: { name: "Local developer" },
+					author: SOURCE.author,
+					homepage: SOURCE.homepage,
+					repository: SOURCE.repository,
+					license: SOURCE.license,
+					keywords: SOURCE.keywords,
 					hooks: "./hooks/claude-hooks.json",
+					userConfig: SOURCE.userConfig,
 				}),
 				null,
 				2,
@@ -109,22 +150,30 @@ const targets = [
 	},
 	{
 		path: "hooks/hooks.json",
-		content: () => JSON.stringify(makeGenericHooks(), null, 2) + "\n",
+		content: () =>
+			JSON.stringify(
+				{ $schema: "https://json.schemastore.org/claude-code-settings.json", ...makeGenericHooks() },
+				null,
+				2,
+			) + "\n",
 	},
 	{
 		path: ".codex-plugin/plugin.json",
 		content: () =>
 			JSON.stringify(
 				makePluginJson({
-					skills: "./skills/",
+					keywords: SOURCE.keywords,
+					author: SOURCE.author,
 					homepage: SOURCE.homepage,
 					repository: SOURCE.repository,
-					author: { name: "Local developer" },
+					license: SOURCE.license,
+					skills: "./skills/",
+					hooks: "./hooks/codex-hooks.json",
 					interface: {
 						displayName: "Learning Mode",
 						shortDescription: "Learn from decisions as you build.",
 						longDescription: "Adds default/off learning guidance, canonical project insight logs, and an on-demand Deep Learning skill.",
-						developerName: "Local developer",
+						developerName: SOURCE.author.name,
 						category: "Productivity",
 						capabilities: ["Instructions", "Lifecycle hooks"],
 						websiteURL: SOURCE.homepage,
@@ -164,6 +213,15 @@ const targets = [
 				2,
 			) + "\n",
 	},
+	{
+		path: ".grok-plugin/plugin.json",
+		content: () =>
+			JSON.stringify(
+				makePluginJson({ skills: "./skills/" }),
+				null,
+				2,
+			) + "\n",
+	},
 	// --- marketplace.json files ---
 	{
 		path: ".claude-plugin/marketplace.json",
@@ -178,16 +236,15 @@ const targets = [
 		path: ".grok-plugin/marketplace.json",
 		content: () => JSON.stringify(makeMarketplace(), null, 2) + "\n",
 	},
+	// --- .cursor/hooks.json ---
 	{
-		path: ".grok-plugin/plugin.json",
-		content: () =>
-			JSON.stringify(makePluginJson({ skills: "./skills/" }), null, 2) + "\n",
+		path: ".cursor/hooks.json",
+		content: () => JSON.stringify(makeCursorHooks(), null, 2) + "\n",
 	},
 ];
 
 // --- Sync ---
 let changed = 0;
-let errors = 0;
 
 for (const target of targets) {
 	const fullPath = path.join(ROOT, target.path);
@@ -208,7 +265,6 @@ for (const target of targets) {
 		console.log(`  ✏️  ${target.path} — updated`);
 	} else {
 		console.log(`  🔄 ${target.path} — needs update`);
-		// Show first diff line
 		const oldLines = oldContent.split("\n");
 		const newLines = newContent.split("\n");
 		for (let i = 0; i < Math.max(oldLines.length, newLines.length); i++) {

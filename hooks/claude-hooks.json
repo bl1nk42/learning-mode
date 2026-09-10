@@ -2,6 +2,8 @@
   "hooks": {
     "SessionStart": [
       {
+        "id": "session:start",
+        "description": "Load learning mode state and previous session context",
         "hooks": [
           {
             "type": "command",
@@ -14,6 +16,8 @@
     ],
     "UserPromptSubmit": [
       {
+        "id": "prompt:track-mode",
+        "description": "Track learning mode on/off state from user prompts",
         "hooks": [
           {
             "type": "command",
@@ -26,6 +30,8 @@
     ],
     "SubagentStart": [
       {
+        "id": "subagent:start",
+        "description": "Configure subagent learning context",
         "hooks": [
           {
             "type": "command",
@@ -37,6 +43,8 @@
     ],
     "Stop": [
       {
+        "id": "stop:record-insights",
+        "description": "Record session insights to insight index",
         "hooks": [
           {
             "type": "command",
@@ -46,6 +54,8 @@
         ]
       },
       {
+        "id": "stop:auto-collect-map",
+        "description": "Auto-collect learning map from recorded insights",
         "hooks": [
           {
             "type": "command",

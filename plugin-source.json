@@ -5,35 +5,64 @@
   "marketplaceDescription": "Learning-oriented guidance for coding agents.",
   "homepage": "https://github.com/bl1nk42/learning-mode",
   "repository": "https://github.com/bl1nk42/learning-mode",
+  "license": "MIT",
+  "keywords": ["learning", "insights", "knowledge-map", "teaching", "tdd", "code-review"],
+  "author": {
+    "name": "bl1nk-team"
+  },
+  "userConfig": {
+    "learning_mode_enabled": {
+      "type": "boolean",
+      "title": "Enable learning mode",
+      "description": "Record insights and generate learning maps during sessions.",
+      "default": true
+    },
+    "auto_collect": {
+      "type": "boolean",
+      "title": "Auto-collect learning map",
+      "description": "Automatically collect insights at session end.",
+      "default": true
+    }
+  },
   "hooks": {
     "SessionStart": [
       {
         "script": "session-start.js",
         "timeout": 5,
-        "statusMessage": "Loading learning mode..."
+        "statusMessage": "Loading learning mode...",
+        "id": "session:start",
+        "description": "Load learning mode state and previous session context"
       }
     ],
     "UserPromptSubmit": [
       {
         "script": "mode-tracker.js",
         "timeout": 5,
-        "statusMessage": "Updating learning mode..."
+        "statusMessage": "Updating learning mode...",
+        "id": "prompt:track-mode",
+        "description": "Track learning mode on/off state from user prompts"
       }
     ],
     "SubagentStart": [
       {
         "script": "subagent-start.js",
-        "timeout": 5
+        "timeout": 5,
+        "id": "subagent:start",
+        "description": "Configure subagent learning context"
       }
     ],
     "Stop": [
       {
         "script": "record-insights.js",
-        "timeout": 5
+        "timeout": 5,
+        "id": "stop:record-insights",
+        "description": "Record session insights to insight index"
       },
       {
         "script": "auto-collect-learning-map.js",
-        "timeout": 10
+        "timeout": 10,
+        "id": "stop:auto-collect-map",
+        "description": "Auto-collect learning map from recorded insights"
       }
     ]
   }

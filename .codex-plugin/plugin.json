@@ -2,17 +2,27 @@
   "name": "learning-mode",
   "version": "0.3.0",
   "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
-  "skills": "./skills/",
+  "keywords": [
+    "learning",
+    "insights",
+    "knowledge-map",
+    "teaching",
+    "tdd",
+    "code-review"
+  ],
+  "author": {
+    "name": "bl1nk-team"
+  },
   "homepage": "https://github.com/bl1nk42/learning-mode",
   "repository": "https://github.com/bl1nk42/learning-mode",
-  "author": {
-    "name": "Local developer"
-  },
+  "license": "MIT",
+  "skills": "./skills/",
+  "hooks": "./hooks/codex-hooks.json",
   "interface": {
     "displayName": "Learning Mode",
     "shortDescription": "Learn from decisions as you build.",
     "longDescription": "Adds default/off learning guidance, canonical project insight logs, and an on-demand Deep Learning skill.",
-    "developerName": "Local developer",
+    "developerName": "bl1nk-team",
     "category": "Productivity",
     "capabilities": [
       "Instructions",

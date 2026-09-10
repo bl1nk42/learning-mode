@@ -1,13 +1,41 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "learning-mode",
-  "description": "Learning-oriented guidance for coding agents.",
+  "owner": {
+    "name": "bl1nk-team"
+  },
+  "metadata": {
+    "description": "Learning-oriented guidance for coding agents."
+  },
   "plugins": [
     {
       "name": "learning-mode",
-      "description": "Explain meaningful trade-offs while building.",
       "source": "./",
-      "category": "productivity"
+      "description": "Learning-oriented guidance for coding agents.",
+      "version": "0.3.0",
+      "author": {
+        "name": "bl1nk-team"
+      },
+      "homepage": "https://github.com/bl1nk42/learning-mode",
+      "repository": "https://github.com/bl1nk42/learning-mode",
+      "license": "MIT",
+      "keywords": [
+        "learning",
+        "insights",
+        "knowledge-map",
+        "teaching",
+        "tdd",
+        "code-review"
+      ],
+      "category": "productivity",
+      "tags": [
+        "learning",
+        "insights",
+        "knowledge-map",
+        "teaching",
+        "tdd",
+        "code-review"
+      ],
+      "strict": false
     }
   ]
 }

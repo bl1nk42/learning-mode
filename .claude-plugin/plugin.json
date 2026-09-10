@@ -3,7 +3,32 @@
   "version": "0.3.0",
   "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
   "author": {
-    "name": "Local developer"
+    "name": "bl1nk-team"
   },
-  "hooks": "./hooks/claude-hooks.json"
+  "homepage": "https://github.com/bl1nk42/learning-mode",
+  "repository": "https://github.com/bl1nk42/learning-mode",
+  "license": "MIT",
+  "keywords": [
+    "learning",
+    "insights",
+    "knowledge-map",
+    "teaching",
+    "tdd",
+    "code-review"
+  ],
+  "hooks": "./hooks/claude-hooks.json",
+  "userConfig": {
+    "learning_mode_enabled": {
+      "type": "boolean",
+      "title": "Enable learning mode",
+      "description": "Record insights and generate learning maps during sessions.",
+      "default": true
+    },
+    "auto_collect": {
+      "type": "boolean",
+      "title": "Auto-collect learning map",
+      "description": "Automatically collect insights at session end.",
+      "default": true
+    }
+  }
 }

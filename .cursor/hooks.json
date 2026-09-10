@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node .cursor/hooks/session-start.js",
+        "event": "sessionStart",
+        "description": "Load learning mode state and previous session context"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "node .cursor/hooks/record-insights.js",
+        "event": "sessionEnd",
+        "description": "Record session insights to insight index"
+      },
+      {
+        "command": "node .cursor/hooks/auto-collect-learning-map.js",
+        "event": "sessionEnd",
+        "description": "Auto-collect learning map from recorded insights"
+      }
+    ]
+  }
+}
