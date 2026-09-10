@@ -2,6 +2,7 @@
   "name": "learning-mode",
   "version": "0.3.0",
   "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
+  "marketplaceDescription": "Learning-oriented guidance for coding agents.",
   "homepage": "https://github.com/bl1nk42/learning-mode",
   "repository": "https://github.com/bl1nk42/learning-mode",
   "hooks": {

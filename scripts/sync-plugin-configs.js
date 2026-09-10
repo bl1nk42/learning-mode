@@ -63,6 +63,23 @@ function makeGenericHooks() {
 	return { hooks };
 }
 
+function makeMarketplace(extra = {}) {
+	return {
+		"$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+		name: SOURCE.name,
+		description: SOURCE.marketplaceDescription,
+		plugins: [
+			{
+				name: SOURCE.name,
+				description: "Explain meaningful trade-offs while building.",
+				source: "./",
+				category: "productivity",
+				...extra,
+			},
+		],
+	};
+}
+
 // --- Targets ---
 const targets = [
 	{
@@ -146,6 +163,25 @@ const targets = [
 				null,
 				2,
 			) + "\n",
+	},
+	// --- marketplace.json files ---
+	{
+		path: ".claude-plugin/marketplace.json",
+		content: () => JSON.stringify(makeMarketplace(), null, 2) + "\n",
+	},
+	{
+		path: ".github/plugin/marketplace.json",
+		content: () =>
+			JSON.stringify(makeMarketplace({ skills: "skills/" }), null, 2) + "\n",
+	},
+	{
+		path: ".grok-plugin/marketplace.json",
+		content: () => JSON.stringify(makeMarketplace(), null, 2) + "\n",
+	},
+	{
+		path: ".grok-plugin/plugin.json",
+		content: () =>
+			JSON.stringify(makePluginJson({ skills: "./skills/" }), null, 2) + "\n",
 	},
 ];
 

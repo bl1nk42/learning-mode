@@ -55,6 +55,7 @@ const platforms = [
 	".github/plugin/plugin.json",
 	".devin-plugin/plugin.json",
 	".qoder-plugin/plugin.json",
+	".grok-plugin/plugin.json",
 ];
 for (const p of platforms) {
 	const fullPath = path.join(ROOT, p);
@@ -65,6 +66,26 @@ for (const p of platforms) {
 	} else {
 		failed++;
 		console.log(`  ❌ FAIL: ${p} does not exist`);
+	}
+}
+
+// --- F2. All marketplace.json files have correct name and description ---
+const marketplaces = [
+	".claude-plugin/marketplace.json",
+	".github/plugin/marketplace.json",
+	".grok-plugin/marketplace.json",
+];
+for (const m of marketplaces) {
+	const fullPath = path.join(ROOT, m);
+	if (fs.existsSync(fullPath)) {
+		const config = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
+		assert(config.name === source.name, `${m} name matches source`);
+		assert(config.description === source.marketplaceDescription, `${m} description matches marketplaceDescription`);
+		assert(Array.isArray(config.plugins) && config.plugins.length === 1, `${m} has 1 plugin entry`);
+		assert(config.plugins[0].name === source.name, `${m} plugin[0].name matches source`);
+	} else {
+		failed++;
+		console.log(`  ❌ FAIL: ${m} does not exist`);
 	}
 }
 
