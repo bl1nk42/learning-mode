@@ -142,6 +142,22 @@ assert(md.includes("# Learning Map: test-project"), "has title");
 assert(md.includes("Graph search"), "includes insight content");
 assert(md.includes("Context building"), "includes second insight content");
 
+// --- Test: output path ---
+console.log("\n=== Output Path ===");
+
+const { getVaultPath, getProjectDir, getSessionMapPath } = require("./config");
+
+// Test that session map path is in session-maps/ not projects/
+const sessionMapPath = getSessionMapPath ? getSessionMapPath("/path/to/project") : null;
+if (sessionMapPath) {
+	assert(sessionMapPath.includes("session-maps"), "session map path includes 'session-maps'");
+	assert(!sessionMapPath.includes("projects/"), "session map path does NOT include 'projects/'");
+	assert(sessionMapPath.endsWith(".json"), "session map path ends with .json");
+} else {
+	// If getSessionMapPath doesn't exist yet, check config.js exports
+	assert(false, "getSessionMapPath not exported from config.js — NEEDS IMPLEMENTATION");
+}
+
 // --- Summary ---
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);

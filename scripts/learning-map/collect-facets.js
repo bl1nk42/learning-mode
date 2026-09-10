@@ -13,7 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const os = require("os");
-const { getVaultPath, getProjectDir } = require("./config");
+const { getVaultPath, getProjectDir, getSessionMapPath } = require("./config");
 
 // --- Helpers ---
 function getProjectId(projectRoot) {
@@ -199,6 +199,7 @@ function createLearningMapJSON(insights, projectRoot, projectName) {
 // --- Main ---
 function main() {
 	const projectRoot = process.argv[2] || process.cwd();
+	const today = new Date().toISOString().split("T")[0];
 
 	if (!fs.existsSync(projectRoot)) {
 		console.error(`Project root does not exist: ${projectRoot}`);
@@ -239,9 +240,13 @@ function main() {
 	fs.writeFileSync(mdPath, markdown);
 	console.log(`Created: ${mdPath}`);
 
-	// Create JSON (for agents)
+	// Create session map (schema-valid JSON)
 	const json = createLearningMapJSON(projectInsights, projectRoot, projectName);
-	const jsonPath = path.join(projectDir, "learning-map.json");
+	const sessionMapDir = path.join(os.homedir(), ".learning-mode", "session-maps");
+	if (!fs.existsSync(sessionMapDir)) {
+		fs.mkdirSync(sessionMapDir, { recursive: true });
+	}
+	const jsonPath = path.join(sessionMapDir, `${projectId}-${today}.json`);
 	fs.writeFileSync(jsonPath, JSON.stringify(json, null, 2));
 	console.log(`Created: ${jsonPath}`);
 

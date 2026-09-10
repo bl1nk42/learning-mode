@@ -15,7 +15,7 @@ const path = require('path');
 const os = require('os');
 
 // --- Defaults ---
-const DEFAULT_VAULT_NAME = 'LearningVault';
+const DEFAULT_VAULT_NAME = '.learning-mode';
 const CONFIG_DIR = path.join(os.homedir(), '.learning-mode');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 
@@ -75,6 +75,15 @@ function getProjectDir(projectRoot) {
   return path.join(vaultPath, 'projects', projectId);
 }
 
+// --- Get session map path ---
+function getSessionMapPath(projectRoot) {
+  const crypto = require('crypto');
+  const projectId = crypto.createHash('md5').update(projectRoot).digest('hex').slice(0, 8);
+  const today = new Date().toISOString().split('T')[0];
+  const configDir = path.join(os.homedir(), '.learning-mode');
+  return path.join(configDir, 'session-maps', `${projectId}-${today}.json`);
+}
+
 // --- Initialize vault ---
 function initVault(vaultPath) {
   // Create directories
@@ -104,6 +113,7 @@ module.exports = {
   getVaultPath,
   saveVaultPath,
   getProjectDir,
+  getSessionMapPath,
   initVault,
   CONFIG_FILE,
   DEFAULT_VAULT_NAME
