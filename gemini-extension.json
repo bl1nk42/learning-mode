@@ -1,6 +1,6 @@
 {
   "name": "learning-mode",
   "version": "0.3.0",
-  "description": "Adds concise learning-oriented guidance to coding sessions.",
+  "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
   "contextFileName": "AGENTS.md"
 }

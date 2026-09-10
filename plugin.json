@@ -2,7 +2,12 @@
   "name": "learning-mode",
   "version": "0.3.0",
   "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
-  "contextFileName": "AGENTS.md",
+  "author": {
+    "name": "bl1nk-team"
+  },
+  "homepage": "https://github.com/bl1nk42/learning-mode",
+  "repository": "https://github.com/bl1nk42/learning-mode",
+  "license": "MIT",
   "keywords": [
     "learning",
     "insights",
@@ -11,5 +16,10 @@
     "tdd",
     "code-review"
   ],
-  "license": "MIT"
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
 }

@@ -3,11 +3,9 @@
 /**
  * sync-plugin-configs.js
  *
- * Syncs shared metadata (name, version, description, hooks, author, keywords, license)
- * across all plugin.json and marketplace.json files from plugin-source.json.
- *
- * Native platform configs (.vscode/settings.json, .gemini/GEMINI.md, etc.)
- * are NOT generated here — they are static files maintained separately.
+ * Syncs plugin.json, marketplace.json, hooks.json across all platforms
+ * from plugin-source.json. Only includes fields defined in each
+ * platform's schema — no extra fields.
  *
  * Usage:
  *   node scripts/sync-plugin-configs.js          # dry-run
@@ -21,11 +19,24 @@ const ROOT = path.join(__dirname, "..");
 const S = JSON.parse(fs.readFileSync(path.join(ROOT, "plugin-source.json"), "utf-8"));
 const APPLY = process.argv.includes("--apply");
 
-// --- Helpers ---
 function json(obj) { return JSON.stringify(obj, null, 2) + "\n"; }
 
-function pluginJson(overrides = {}) {
-	return json({ name: S.name, version: S.version, description: S.description, ...overrides });
+// Fields from plugin.schema.json (additionalProperties: false)
+// name, version, description, author, homepage, repository,
+// license, keywords, skills, commands, mcpServers, features
+function schemaFields() {
+	return {
+		name: S.name,
+		version: S.version,
+		description: S.description,
+		author: S.author,
+		homepage: S.homepage,
+		repository: S.repository,
+		license: S.license,
+		keywords: S.keywords,
+		skills: [S.skills],
+		commands: [S.commands],
+	};
 }
 
 function marketplace(extra = {}) {
@@ -51,7 +62,7 @@ function marketplace(extra = {}) {
 	});
 }
 
-function hooks(envVar) {
+function hooksFile(envVar) {
 	const h = {};
 	for (const [event, entries] of Object.entries(S.hooks)) {
 		h[event] = entries.map((e) => ({
@@ -83,26 +94,56 @@ function cursorHooks() {
 	return json({ version: 1, hooks: h });
 }
 
-// --- Targets: only plugin.json, marketplace.json, hooks.json ---
+// --- Targets: only schema-defined fields, no extras ---
 const targets = [
-	// plugin.json (shared format: Claude, Codex, GitHub, Devin, Grok, Qoder)
-	["plugin.json",                 () => pluginJson({ contextFileName: "AGENTS.md", keywords: S.keywords, license: S.license })],
-	[".claude-plugin/plugin.json",  () => pluginJson({ author: S.author, homepage: S.homepage, repository: S.repository, license: S.license, keywords: S.keywords, hooks: "./hooks/claude-hooks.json", userConfig: S.userConfig })],
-	[".codex-plugin/plugin.json",   () => pluginJson({ keywords: S.keywords, author: S.author, homepage: S.homepage, repository: S.repository, license: S.license, skills: "./skills/", hooks: "./hooks/codex-hooks.json", interface: { displayName: "Learning Mode", shortDescription: "Learn from decisions as you build.", longDescription: S.description, developerName: S.author.name, category: "Productivity", capabilities: ["Instructions", "Lifecycle hooks"], websiteURL: S.homepage, privacyPolicyURL: `${S.homepage}/blob/main/PRIVACY.md`, termsOfServiceURL: `${S.homepage}/blob/main/TERMS.md`, defaultPrompt: ["Help me learn while we build this."] } })],
-	[".github/plugin/plugin.json",  () => pluginJson({ skills: "skills/" })],
-	[".devin-plugin/plugin.json",   () => pluginJson({ skills: "./skills/" })],
-	[".grok-plugin/plugin.json",    () => pluginJson({ skills: "./skills/" })],
-	[".qoder-plugin/plugin.json",   () => pluginJson({ skills: "./skills/", rules: "./.qoder/rules/" })],
+	// plugin.json — schema fields only
+	["plugin.json",                 () => json(schemaFields())],
 
-	// marketplace.json
+	// Claude — schema fields + userConfig (Claude-specific, not in schema)
+	[".claude-plugin/plugin.json",  () => json({ ...schemaFields(), userConfig: S.userConfig })],
+
+	// Codex — schema fields only
+	[".codex-plugin/plugin.json",   () => json(schemaFields())],
+
+	// GitHub — schema fields only
+	[".github/plugin/plugin.json",  () => json(schemaFields())],
+
+	// Devin — schema fields only
+	[".devin-plugin/plugin.json",   () => json(schemaFields())],
+
+	// Grok — schema fields only
+	[".grok-plugin/plugin.json",    () => json(schemaFields())],
+
+	// Qoder — schema fields only
+	[".qoder-plugin/plugin.json",   () => json(schemaFields())],
+
+	// Marketplace
 	[".claude-plugin/marketplace.json", () => marketplace()],
-	[".github/plugin/marketplace.json", () => marketplace({ skills: "skills/" })],
+	[".github/plugin/marketplace.json", () => marketplace({ skills: ["skills/"] })],
 	[".grok-plugin/marketplace.json",   () => marketplace()],
 
-	// hooks.json
-	["hooks/claude-hooks.json", () => hooks("CLAUDE_PLUGIN_ROOT")],
-	["hooks/hooks.json",        () => json({ $schema: "https://json.schemastore.org/claude-code-settings.json", ...JSON.parse(hooks("PLUGIN_ROOT")).hooks })],
+	// Hooks
+	["hooks/claude-hooks.json", () => hooksFile("CLAUDE_PLUGIN_ROOT")],
+	["hooks/hooks.json",        () => json({ $schema: "https://json.schemastore.org/claude-code-settings.json", ...JSON.parse(hooksFile("PLUGIN_ROOT")).hooks })],
 	[".cursor/hooks.json",      () => cursorHooks()],
+
+	// Hermes manifest (YAML)
+	["plugin.yaml", () =>
+		`name: ${S.name}\nversion: ${S.version}\ndescription: ${S.description}\nprovides_hooks:\n  - pre_llm_call\nprovides_skills:\n  - ${S.name}\n`],
+
+	// OpenCode manifest
+	["opencode.json", () => json({
+		"$schema": "https://opencode.ai/config.json",
+		"plugin": [`.opencode/plugins/${S.name}.mjs`],
+	})],
+
+	// Gemini extension manifest
+	["gemini-extension.json", () => json({
+		name: S.name,
+		version: S.version,
+		description: S.description,
+		contextFileName: S.contextFileName,
+	})],
 ];
 
 // --- Sync ---

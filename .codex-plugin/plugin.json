@@ -2,6 +2,12 @@
   "name": "learning-mode",
   "version": "0.3.0",
   "description": "Learning guidance, per-project insight logs, and on-demand deep study.",
+  "author": {
+    "name": "bl1nk-team"
+  },
+  "homepage": "https://github.com/bl1nk42/learning-mode",
+  "repository": "https://github.com/bl1nk42/learning-mode",
+  "license": "MIT",
   "keywords": [
     "learning",
     "insights",
@@ -10,29 +16,10 @@
     "tdd",
     "code-review"
   ],
-  "author": {
-    "name": "bl1nk-team"
-  },
-  "homepage": "https://github.com/bl1nk42/learning-mode",
-  "repository": "https://github.com/bl1nk42/learning-mode",
-  "license": "MIT",
-  "skills": "./skills/",
-  "hooks": "./hooks/codex-hooks.json",
-  "interface": {
-    "displayName": "Learning Mode",
-    "shortDescription": "Learn from decisions as you build.",
-    "longDescription": "Adds default/off learning guidance, canonical project insight logs, and an on-demand Deep Learning skill.",
-    "developerName": "bl1nk-team",
-    "category": "Productivity",
-    "capabilities": [
-      "Instructions",
-      "Lifecycle hooks"
-    ],
-    "websiteURL": "https://github.com/bl1nk42/learning-mode",
-    "privacyPolicyURL": "https://github.com/bl1nk42/learning-mode/blob/main/PRIVACY.md",
-    "termsOfServiceURL": "https://github.com/bl1nk42/learning-mode/blob/main/TERMS.md",
-    "defaultPrompt": [
-      "Help me learn while we build this."
-    ]
-  }
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
 }

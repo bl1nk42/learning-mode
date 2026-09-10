@@ -10,6 +10,9 @@
   "author": {
     "name": "bl1nk-team"
   },
+  "contextFileName": "AGENTS.md",
+  "skills": "./skills/",
+  "commands": "./commands/",
   "userConfig": {
     "learning_mode_enabled": {
       "type": "boolean",

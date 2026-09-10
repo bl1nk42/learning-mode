@@ -1,70 +1,68 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "hooks": {
-    "SessionStart": [
-      {
-        "id": "session:start",
-        "description": "Load learning mode state and previous session context",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${PLUGIN_ROOT}/hooks/session-start.js\"",
-            "timeout": 5,
-            "statusMessage": "Loading learning mode..."
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "id": "prompt:track-mode",
-        "description": "Track learning mode on/off state from user prompts",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${PLUGIN_ROOT}/hooks/mode-tracker.js\"",
-            "timeout": 5,
-            "statusMessage": "Updating learning mode..."
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "id": "subagent:start",
-        "description": "Configure subagent learning context",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${PLUGIN_ROOT}/hooks/subagent-start.js\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "id": "stop:record-insights",
-        "description": "Record session insights to insight index",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${PLUGIN_ROOT}/hooks/record-insights.js\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "id": "stop:auto-collect-map",
-        "description": "Auto-collect learning map from recorded insights",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${PLUGIN_ROOT}/hooks/auto-collect-learning-map.js\"",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  }
+  "SessionStart": [
+    {
+      "id": "session:start",
+      "description": "Load learning mode state and previous session context",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"${PLUGIN_ROOT}/hooks/session-start.js\"",
+          "timeout": 5,
+          "statusMessage": "Loading learning mode..."
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "id": "prompt:track-mode",
+      "description": "Track learning mode on/off state from user prompts",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"${PLUGIN_ROOT}/hooks/mode-tracker.js\"",
+          "timeout": 5,
+          "statusMessage": "Updating learning mode..."
+        }
+      ]
+    }
+  ],
+  "SubagentStart": [
+    {
+      "id": "subagent:start",
+      "description": "Configure subagent learning context",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"${PLUGIN_ROOT}/hooks/subagent-start.js\"",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "id": "stop:record-insights",
+      "description": "Record session insights to insight index",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"${PLUGIN_ROOT}/hooks/record-insights.js\"",
+          "timeout": 5
+        }
+      ]
+    },
+    {
+      "id": "stop:auto-collect-map",
+      "description": "Auto-collect learning map from recorded insights",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"${PLUGIN_ROOT}/hooks/auto-collect-learning-map.js\"",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
 }

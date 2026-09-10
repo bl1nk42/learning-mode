@@ -16,7 +16,12 @@
     "tdd",
     "code-review"
   ],
-  "hooks": "./hooks/claude-hooks.json",
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ],
   "userConfig": {
     "learning_mode_enabled": {
       "type": "boolean",

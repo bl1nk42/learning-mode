@@ -36,7 +36,9 @@
         "code-review"
       ],
       "strict": false,
-      "skills": "skills/"
+      "skills": [
+        "skills/"
+      ]
     }
   ]
 }
