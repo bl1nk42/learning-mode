@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
+const { validateCanvas } = require('./validate-learning-plan-canvas');
 
 const [wikiDir, indexFile, ...args] = process.argv.slice(2);
 const jsonOutput = args.includes('--json');

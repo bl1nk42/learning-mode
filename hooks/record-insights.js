@@ -3,12 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const { appendLogs, readInput, readMode, writeStatusFlag } = require('./runtime');
 
+/** Collect string values recursively from an insight payload. */
 function strings(value, result) {
   if (typeof value === 'string') result.push(value);
   else if (Array.isArray(value)) value.forEach((item) => strings(item, result));
   else if (value && typeof value === 'object') Object.values(value).forEach((item) => strings(item, result));
 }
 
+/** Extract source references from an insight block. */
 function references(block, cwd) {
   const root = path.resolve(cwd || process.cwd());
   return [...block.matchAll(/`([^`\n]+):(\d+)`/g)].flatMap((match) => {
@@ -26,6 +28,7 @@ function references(block, cwd) {
   });
 }
 
+/** Extract evidence-bound insight records from hook output. */
 function insights(text, cwd) {
   const found = [];
   const unquoted = text.replace(/^>\s?/gm, '');

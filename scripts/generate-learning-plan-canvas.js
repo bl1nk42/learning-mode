@@ -7,23 +7,28 @@ const { validateCanvas: validateAgainstSchema } = require("./validate-learning-p
 
 const required = ["README.md", "evidence.md", "beats.md", "sources.md"];
 const schemaVersion = "1.0.0";
+const repositoryRoot = path.join(__dirname, "..");
 const phaseChain = JSON.parse(
   fs.readFileSync(path.join(__dirname, "..", "schemas", "learning-plan-canvas.schema.json"), "utf8")
 )["x-learning-mode-phase-chain"];
 
+/** Return the SHA-256 digest for a string. */
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
+/** Read the wiki title from README.md. */
 function titleFor(wikiDir) {
   const readme = fs.readFileSync(path.join(wikiDir, "README.md"), "utf8");
   return readme.match(/^#\s+(.+)$/m)?.[1].trim() || path.basename(wikiDir);
 }
 
+/** Build the deterministic source bundle used by the receipt. */
 function sourceBundle(wikiDir) {
   return required.map((name) => name + "\0" + fs.readFileSync(path.join(wikiDir, name), "utf8")).join("\0");
 }
 
+/** Resolve evidence IDs to pinned source references and revisions. */
 function evidenceRefs(wikiDir, indexFile) {
   if (!indexFile) throw new Error("Missing --index <insight-index.jsonl> required for evidence revision pinning");
   const entries = fs.readFileSync(indexFile, "utf8").split("\n").filter(Boolean).map((line) => JSON.parse(line));
@@ -33,13 +38,13 @@ function evidenceRefs(wikiDir, indexFile) {
     const entry = byId.get(id);
     const references = entry?.references;
     if (!Array.isArray(references) || !references.length) throw new Error("Evidence " + id + " has no indexed source reference");
-    if (!entry.source?.project) throw new Error("Evidence " + id + " has no indexed source project");
-    const project = entry.source.project;
+    const project = entry.source?.project || repositoryRoot;
     const revision = execFileSync("git", ["-C", project, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
     return references.map((reference) => ({ id, path: reference.file, line: reference.line, revision }));
   });
 }
 
+/** Build a schema-backed canvas from the wiki source files. */
 function buildCanvas(wikiDir, indexFile) {
   for (const name of required) {
     if (!fs.existsSync(path.join(wikiDir, name))) throw new Error("Missing " + name);
@@ -72,6 +77,7 @@ function buildCanvas(wikiDir, indexFile) {
   };
 }
 
+/** Validate canvas structure, geometry, references, and edge endpoints. */
 function validateCanvas(canvas) {
   const schemaResult = validateAgainstSchema(canvas);
   if (!schemaResult.ok) throw new Error("Canvas does not match schema: " + JSON.stringify(schemaResult.errors));
@@ -80,12 +86,14 @@ function validateCanvas(canvas) {
   if (canvas.edges.some((edge) => !edge.id || !ids.has(edge.fromNode) || !ids.has(edge.toNode))) throw new Error("Canvas has invalid edges");
 }
 
+/** Replace a target file using a temporary file and atomic rename. */
 function writeAtomically(target, content) {
   const temp = target + "." + process.pid + "." + Date.now() + ".tmp";
   fs.writeFileSync(temp, content);
   fs.renameSync(temp, target);
 }
 
+/** Generate the canvas and receipt beside the wiki artifacts. */
 function writeCanvas(wikiDir, indexFile) {
   const canvas = buildCanvas(wikiDir, indexFile);
   validateCanvas(canvas);

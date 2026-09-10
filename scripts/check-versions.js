@@ -9,6 +9,7 @@ const manifests = [
   '.qoder-plugin/plugin.json', 'gemini-extension.json', 'plugin.json', 'plugin.yaml',
 ];
 
+/** Read the plugin version from a manifest file. */
 function version(file) {
   const text = fs.readFileSync(path.join(root, file), 'utf8');
   return file.endsWith('.json') ? JSON.parse(text).version : text.match(/^version:\s*(\S+)$/m)?.[1];

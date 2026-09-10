@@ -1,6 +1,10 @@
 ## Mandatory plan preflight
 
-If the requested work implements or updates an item in `IMPROVEMENT_PLAN.md`, or the user names a plan, read that plan in full **before** writing tests, code, checklist updates, commits, or PRs. The plan is a binding dependency, not background context.
+For implementation-only requests, run the same mandatory preflight; implementation does not bypass planning or provenance checks.
+
+If `IMPROVEMENT_PLAN.md` exists or the user names a plan, read that plan in full **before** writing tests, code, checklist updates, commits, or PRs. The plan is a binding dependency, not background context.
+
+Read `CONTEXT.md` before applying the provenance distinctions below (`Verified Reference`, `Reference-Derived Implementation`, `Plan-Derived Draft`, etc.) — it is the canonical glossary for these terms.
 
 When a plan names a reference repository, standard, or source for a phase, inspect the relevant source and record its provenance before designing or implementing that phase. A plan example is not permission to substitute an unverified local design. Never implement first and validate the reference afterward.
 

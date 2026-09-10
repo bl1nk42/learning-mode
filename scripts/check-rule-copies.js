@@ -12,6 +12,7 @@ const adapters = [
   '.swival/skills/learning-mode/SKILL.md', '.windsurf/rules/learning-mode.md',
 ];
 
+/** Remove adapter frontmatter before comparing canonical rule text. */
 function body(text) {
   if (!text.startsWith('---\n')) return text.trim();
   const end = text.indexOf('\n---\n', 4);

@@ -266,3 +266,37 @@ def test_compare_wiki_reports_evidence_beat_and_source_deltas(tmp_path):
     assert delta["changedEvidenceIds"] == ["0123456789abcdef"]
     assert delta["movedBeatSections"] == [{"section": "Observe", "before": 1, "after": 2}, {"section": "Practice", "before": 2, "after": 1}]
     assert delta["missingSources"] == {"before": ["1111111111111111"], "after": []}
+
+
+def test_schema_rejects_wrong_node_shapes_and_missing_phase_nodes(tmp_path):
+    wiki, _ = valid_wiki(tmp_path)
+    canvas_path = wiki / "learning-plan.canvas"
+    canvas = json.loads(canvas_path.read_text(encoding="utf-8"))
+    canvas["nodes"] = [node for node in canvas["nodes"] if node["id"] != "practice"]
+    canvas["nodes"][1]["file"] = 42
+    canvas_path.write_text(json.dumps(canvas), encoding="utf-8")
+    result = subprocess.run(
+        ["node", "scripts/validate-learning-plan-canvas.js", canvas_path],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    assert result.returncode == 1
+
+
+def test_compare_wiki_ignores_fenced_headings_and_tracks_full_evidence_entries(tmp_path):
+    before = tmp_path / "before2"
+    after = tmp_path / "after2"
+    before.mkdir(); after.mkdir()
+    (before / "evidence.md").write_text("0123456789abcdef old\n", encoding="utf-8")
+    (after / "evidence.md").write_text("0123456789abcdef old\n  changed detail\n", encoding="utf-8")
+    (before / "sources.md").write_text("", encoding="utf-8")
+    (after / "sources.md").write_text("", encoding="utf-8")
+    (before / "beats.md").write_text("# Start\n## Observe\n", encoding="utf-8")
+    (after / "beats.md").write_text("```md\n## Fake\n```\n# Start\n## Observe\n", encoding="utf-8")
+    result = subprocess.run(
+        ["node", "scripts/compare-wiki.js", before, after],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    assert result.returncode == 0
+    delta = json.loads(result.stdout)
+    assert delta["changedEvidenceIds"] == ["0123456789abcdef"]
+    assert delta["movedBeatSections"] == []
