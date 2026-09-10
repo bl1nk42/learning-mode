@@ -3,283 +3,123 @@
 /**
  * sync-plugin-configs.js
  *
- * Single source of truth: plugin-source.json
- * Generates all platform plugin configs from one place.
+ * Syncs shared metadata (name, version, description, hooks, author, keywords, license)
+ * across all plugin.json and marketplace.json files from plugin-source.json.
+ *
+ * Native platform configs (.vscode/settings.json, .gemini/GEMINI.md, etc.)
+ * are NOT generated here — they are static files maintained separately.
  *
  * Usage:
- *   node scripts/sync-plugin-configs.js          # dry-run (show diff)
- *   node scripts/sync-plugin-configs.js --apply   # write files
+ *   node scripts/sync-plugin-configs.js          # dry-run
+ *   node scripts/sync-plugin-configs.js --apply   # write
  */
 
 const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.join(__dirname, "..");
-const SOURCE = JSON.parse(fs.readFileSync(path.join(ROOT, "plugin-source.json"), "utf-8"));
-
+const S = JSON.parse(fs.readFileSync(path.join(ROOT, "plugin-source.json"), "utf-8"));
 const APPLY = process.argv.includes("--apply");
 
-// --- Platform configs ---
-function makePluginJson(overrides = {}) {
-	return {
-		name: SOURCE.name,
-		version: SOURCE.version,
-		description: SOURCE.description,
-		...overrides,
-	};
+// --- Helpers ---
+function json(obj) { return JSON.stringify(obj, null, 2) + "\n"; }
+
+function pluginJson(overrides = {}) {
+	return json({ name: S.name, version: S.version, description: S.description, ...overrides });
 }
 
-function makeClaudeHooks() {
-	const hooks = {};
-	for (const [event, entries] of Object.entries(SOURCE.hooks)) {
-		hooks[event] = entries.map((h) => ({
-			...(h.id ? { id: h.id } : {}),
-			...(h.description ? { description: h.description } : {}),
-			hooks: [
-				{
-					type: "command",
-					command: `node "\${CLAUDE_PLUGIN_ROOT}/hooks/${h.script}"`,
-					timeout: h.timeout || 5,
-					...(h.statusMessage ? { statusMessage: h.statusMessage } : {}),
-				},
-			],
+function marketplace(extra = {}) {
+	return json({
+		name: S.name,
+		owner: S.author,
+		metadata: { description: S.marketplaceDescription },
+		plugins: [{
+			name: S.name,
+			source: "./",
+			description: S.marketplaceDescription,
+			version: S.version,
+			author: S.author,
+			homepage: S.homepage,
+			repository: S.repository,
+			license: S.license,
+			keywords: S.keywords,
+			category: "productivity",
+			tags: S.keywords,
+			strict: false,
+			...extra,
+		}],
+	});
+}
+
+function hooks(envVar) {
+	const h = {};
+	for (const [event, entries] of Object.entries(S.hooks)) {
+		h[event] = entries.map((e) => ({
+			...(e.id ? { id: e.id } : {}),
+			...(e.description ? { description: e.description } : {}),
+			hooks: [{
+				type: "command",
+				command: `node "\${${envVar}}/hooks/${e.script}"`,
+				timeout: e.timeout || 5,
+				...(e.statusMessage ? { statusMessage: e.statusMessage } : {}),
+			}],
 		}));
 	}
-	return { hooks };
+	return json({ hooks: h });
 }
 
-function makeGenericHooks() {
-	const hooks = {};
-	for (const [event, entries] of Object.entries(SOURCE.hooks)) {
-		hooks[event] = entries.map((h) => ({
-			...(h.id ? { id: h.id } : {}),
-			...(h.description ? { description: h.description } : {}),
-			hooks: [
-				{
-					type: "command",
-					command: `node "\${PLUGIN_ROOT}/hooks/${h.script}"`,
-					timeout: h.timeout || 5,
-					...(h.statusMessage ? { statusMessage: h.statusMessage } : {}),
-				},
-			],
+function cursorHooks() {
+	const map = { SessionStart: "sessionStart", Stop: "sessionEnd" };
+	const h = {};
+	for (const [event, entries] of Object.entries(S.hooks)) {
+		const ce = map[event];
+		if (!ce) continue;
+		h[ce] = entries.map((e) => ({
+			command: `node .cursor/hooks/${e.script}`,
+			event: ce,
+			...(e.description ? { description: e.description } : {}),
 		}));
 	}
-	return { hooks };
+	return json({ version: 1, hooks: h });
 }
 
-function makeMarketplace(extra = {}) {
-	return {
-		name: SOURCE.name,
-		owner: SOURCE.author,
-		metadata: {
-			description: SOURCE.marketplaceDescription,
-		},
-		plugins: [
-			{
-				name: SOURCE.name,
-				source: "./",
-				description: SOURCE.marketplaceDescription,
-				version: SOURCE.version,
-				author: SOURCE.author,
-				homepage: SOURCE.homepage,
-				repository: SOURCE.repository,
-				license: SOURCE.license,
-				keywords: SOURCE.keywords,
-				category: "productivity",
-				tags: SOURCE.keywords,
-				strict: false,
-				...extra,
-			},
-		],
-	};
-}
-
-function makeCursorHooks() {
-	const cursorEventMap = {
-		SessionStart: "sessionStart",
-		Stop: "sessionEnd",
-	};
-	const hooks = {};
-	for (const [event, entries] of Object.entries(SOURCE.hooks)) {
-		const cursorEvent = cursorEventMap[event];
-		if (!cursorEvent) continue;
-		hooks[cursorEvent] = entries.map((h) => ({
-			command: `node .cursor/hooks/${h.script}`,
-			event: cursorEvent,
-			...(h.description ? { description: h.description } : {}),
-		}));
-	}
-	return { version: 1, hooks };
-}
-
-// --- Targets ---
+// --- Targets: only plugin.json, marketplace.json, hooks.json ---
 const targets = [
-	{
-		path: "plugin.json",
-		content: () =>
-			JSON.stringify(
-				makePluginJson({
-					contextFileName: "AGENTS.md",
-					keywords: SOURCE.keywords,
-					license: SOURCE.license,
-				}),
-				null,
-				2,
-			) + "\n",
-	},
-	{
-		path: ".claude-plugin/plugin.json",
-		content: () =>
-			JSON.stringify(
-				makePluginJson({
-					author: SOURCE.author,
-					homepage: SOURCE.homepage,
-					repository: SOURCE.repository,
-					license: SOURCE.license,
-					keywords: SOURCE.keywords,
-					hooks: "./hooks/claude-hooks.json",
-					userConfig: SOURCE.userConfig,
-				}),
-				null,
-				2,
-			) + "\n",
-	},
-	{
-		path: "hooks/claude-hooks.json",
-		content: () => JSON.stringify(makeClaudeHooks(), null, 2) + "\n",
-	},
-	{
-		path: "hooks/hooks.json",
-		content: () =>
-			JSON.stringify(
-				{ $schema: "https://json.schemastore.org/claude-code-settings.json", ...makeGenericHooks() },
-				null,
-				2,
-			) + "\n",
-	},
-	{
-		path: ".codex-plugin/plugin.json",
-		content: () =>
-			JSON.stringify(
-				makePluginJson({
-					keywords: SOURCE.keywords,
-					author: SOURCE.author,
-					homepage: SOURCE.homepage,
-					repository: SOURCE.repository,
-					license: SOURCE.license,
-					skills: "./skills/",
-					hooks: "./hooks/codex-hooks.json",
-					interface: {
-						displayName: "Learning Mode",
-						shortDescription: "Learn from decisions as you build.",
-						longDescription: "Adds default/off learning guidance, canonical project insight logs, and an on-demand Deep Learning skill.",
-						developerName: SOURCE.author.name,
-						category: "Productivity",
-						capabilities: ["Instructions", "Lifecycle hooks"],
-						websiteURL: SOURCE.homepage,
-						privacyPolicyURL: `${SOURCE.homepage}/blob/main/PRIVACY.md`,
-						termsOfServiceURL: `${SOURCE.homepage}/blob/main/TERMS.md`,
-						defaultPrompt: ["Help me learn while we build this."],
-					},
-				}),
-				null,
-				2,
-			) + "\n",
-	},
-	{
-		path: ".github/plugin/plugin.json",
-		content: () =>
-			JSON.stringify(
-				makePluginJson({ skills: "skills/" }),
-				null,
-				2,
-			) + "\n",
-	},
-	{
-		path: ".devin-plugin/plugin.json",
-		content: () =>
-			JSON.stringify(
-				makePluginJson({ skills: "./skills/" }),
-				null,
-				2,
-			) + "\n",
-	},
-	{
-		path: ".qoder-plugin/plugin.json",
-		content: () =>
-			JSON.stringify(
-				makePluginJson({ skills: "./skills/", rules: "./.qoder/rules/" }),
-				null,
-				2,
-			) + "\n",
-	},
-	{
-		path: ".grok-plugin/plugin.json",
-		content: () =>
-			JSON.stringify(
-				makePluginJson({ skills: "./skills/" }),
-				null,
-				2,
-			) + "\n",
-	},
-	// --- marketplace.json files ---
-	{
-		path: ".claude-plugin/marketplace.json",
-		content: () => JSON.stringify(makeMarketplace(), null, 2) + "\n",
-	},
-	{
-		path: ".github/plugin/marketplace.json",
-		content: () =>
-			JSON.stringify(makeMarketplace({ skills: "skills/" }), null, 2) + "\n",
-	},
-	{
-		path: ".grok-plugin/marketplace.json",
-		content: () => JSON.stringify(makeMarketplace(), null, 2) + "\n",
-	},
-	// --- .cursor/hooks.json ---
-	{
-		path: ".cursor/hooks.json",
-		content: () => JSON.stringify(makeCursorHooks(), null, 2) + "\n",
-	},
+	// plugin.json (shared format: Claude, Codex, GitHub, Devin, Grok, Qoder)
+	["plugin.json",                 () => pluginJson({ contextFileName: "AGENTS.md", keywords: S.keywords, license: S.license })],
+	[".claude-plugin/plugin.json",  () => pluginJson({ author: S.author, homepage: S.homepage, repository: S.repository, license: S.license, keywords: S.keywords, hooks: "./hooks/claude-hooks.json", userConfig: S.userConfig })],
+	[".codex-plugin/plugin.json",   () => pluginJson({ keywords: S.keywords, author: S.author, homepage: S.homepage, repository: S.repository, license: S.license, skills: "./skills/", hooks: "./hooks/codex-hooks.json", interface: { displayName: "Learning Mode", shortDescription: "Learn from decisions as you build.", longDescription: S.description, developerName: S.author.name, category: "Productivity", capabilities: ["Instructions", "Lifecycle hooks"], websiteURL: S.homepage, privacyPolicyURL: `${S.homepage}/blob/main/PRIVACY.md`, termsOfServiceURL: `${S.homepage}/blob/main/TERMS.md`, defaultPrompt: ["Help me learn while we build this."] } })],
+	[".github/plugin/plugin.json",  () => pluginJson({ skills: "skills/" })],
+	[".devin-plugin/plugin.json",   () => pluginJson({ skills: "./skills/" })],
+	[".grok-plugin/plugin.json",    () => pluginJson({ skills: "./skills/" })],
+	[".qoder-plugin/plugin.json",   () => pluginJson({ skills: "./skills/", rules: "./.qoder/rules/" })],
+
+	// marketplace.json
+	[".claude-plugin/marketplace.json", () => marketplace()],
+	[".github/plugin/marketplace.json", () => marketplace({ skills: "skills/" })],
+	[".grok-plugin/marketplace.json",   () => marketplace()],
+
+	// hooks.json
+	["hooks/claude-hooks.json", () => hooks("CLAUDE_PLUGIN_ROOT")],
+	["hooks/hooks.json",        () => json({ $schema: "https://json.schemastore.org/claude-code-settings.json", ...JSON.parse(hooks("PLUGIN_ROOT")).hooks })],
+	[".cursor/hooks.json",      () => cursorHooks()],
 ];
 
 // --- Sync ---
 let changed = 0;
-
-for (const target of targets) {
-	const fullPath = path.join(ROOT, target.path);
-	const newContent = target.content();
-	const oldContent = fs.existsSync(fullPath)
-		? fs.readFileSync(fullPath, "utf-8")
-		: "";
-
-	if (newContent === oldContent) {
-		console.log(`  ✅ ${target.path} — up to date`);
-		continue;
-	}
-
+for (const [relPath, gen] of targets) {
+	const full = path.join(ROOT, relPath);
+	const next = gen();
+	const prev = fs.existsSync(full) ? fs.readFileSync(full, "utf-8") : "";
+	if (next === prev) { console.log(`  ✅ ${relPath}`); continue; }
 	changed++;
 	if (APPLY) {
-		fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-		fs.writeFileSync(fullPath, newContent);
-		console.log(`  ✏️  ${target.path} — updated`);
+		fs.mkdirSync(path.dirname(full), { recursive: true });
+		fs.writeFileSync(full, next);
+		console.log(`  ✏️  ${relPath}`);
 	} else {
-		console.log(`  🔄 ${target.path} — needs update`);
-		const oldLines = oldContent.split("\n");
-		const newLines = newContent.split("\n");
-		for (let i = 0; i < Math.max(oldLines.length, newLines.length); i++) {
-			if (oldLines[i] !== newLines[i]) {
-				console.log(`     line ${i + 1}: "${(oldLines[i] || "").slice(0, 60)}" → "${(newLines[i] || "").slice(0, 60)}"`);
-				break;
-			}
-		}
+		console.log(`  🔄 ${relPath} — needs update`);
 	}
 }
-
-console.log(
-	`\n${changed === 0 ? "✅ All configs in sync" : `🔄 ${changed} file(s) need update`}`,
-);
-
-if (!APPLY && changed > 0) {
-	console.log("\nRun with --apply to write changes");
-}
+console.log(`\n${changed === 0 ? "✅ All in sync" : `🔄 ${changed} file(s) to update`}`);
+if (!APPLY && changed > 0) console.log("Run with --apply to write");
