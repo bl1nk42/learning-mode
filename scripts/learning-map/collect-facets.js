@@ -143,13 +143,32 @@ function createLearningMapJSON(insights, projectRoot, projectName) {
 	const today = new Date().toISOString().split("T")[0];
 
 	// Convert insights to schema-compliant nodes
+	const slugCount = {};
 	const nodes = insights.map((insight) => {
 		const text = (insight.insights || []).join(" ");
-		const slug = text
+		let slug = text
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, "-")
 			.replace(/^-|-$/g, "")
 			.slice(0, 60);
+		// Dedup: append counter if slug collision
+		if (slugCount[slug]) {
+			slugCount[slug]++;
+			slug = `${slug}-${slugCount[slug]}`;
+		} else {
+			slugCount[slug] = 1;
+		}
+
+		// Preserve references (file:line) in source
+		const source = insight.source
+			? {
+					type: "insight-index",
+					id: insight.id,
+					...(insight.references && insight.references.length
+						? { file: insight.references[0].file, line: insight.references[0].line }
+						: {}),
+			  }
+			: undefined;
 
 		return {
 			id: `insight:${slug}`,
@@ -158,9 +177,7 @@ function createLearningMapJSON(insights, projectRoot, projectName) {
 			content: text,
 			tags: [],
 			difficulty: "intermediate",
-			source: insight.source
-				? { type: "insight-index", id: insight.id }
-				: undefined,
+			source,
 			created_at: insight.recordedAt || new Date().toISOString(),
 		};
 	}).filter((n) => n.content.length > 0);
@@ -172,7 +189,7 @@ function createLearningMapJSON(insights, projectRoot, projectName) {
 			source: nodes[i - 1].id,
 			target: nodes[i].id,
 			type: "builds_on",
-			description: `Sequential learning: ${nodes[i - 1].name.slice(0, 30)} → ${nodes[i].name.slice(0, 30)}`,
+			description: `Sequential learning: ${nodes[i - 1].name} → ${nodes[i].name}`,
 		});
 	}
 
@@ -198,7 +215,7 @@ function createLearningMapJSON(insights, projectRoot, projectName) {
 
 // --- Main ---
 function main() {
-	const projectRoot = process.argv[2] || process.cwd();
+	const projectRoot = path.resolve(process.argv[2] || process.cwd());
 	const today = new Date().toISOString().split("T")[0];
 
 	if (!fs.existsSync(projectRoot)) {

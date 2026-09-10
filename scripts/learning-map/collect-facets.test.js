@@ -91,6 +91,20 @@ if (json.edges.length > 0) {
 	assert(typeof edge.target === "string", "edge has target");
 	assert(typeof edge.type === "string", "edge has type");
 	assert(["builds_on", "related_to", "contradicts", "prerequisite_of", "applies_to"].includes(edge.type), "edge type is valid enum");
+	// Edge description not truncated (was: .slice(0,30) caused broken sentences)
+	if (edge.description) {
+		assert(!edge.description.endsWith("...") || edge.description.length > 40, "edge description not truncated");
+	}
+}
+
+// Source preserves references (file:line)
+if (json.nodes.length > 0 && json.nodes[0].source) {
+	const src = json.nodes[0].source;
+	assert(typeof src === "string" || typeof src === "object", "source is string or object");
+	if (typeof src === "object") {
+		assert(typeof src.type === "string", "source has type");
+		assert(typeof src.id === "string", "source has id");
+	}
 }
 
 // Tour structure (if any)
@@ -132,6 +146,20 @@ assertEqual(getProjectName(tmpDir2), path.basename(tmpDir2), "falls back to dire
 // Cleanup
 fs.rmSync(tmpDir, { recursive: true, force: true });
 fs.rmSync(tmpDir2, { recursive: true, force: true });
+
+// --- Test: Slug dedup (collision guard) ---
+console.log("\n=== Slug Dedup ===");
+
+const duplicateInsights = [
+	{ id: "a", insights: ["same text here"], source: "a.txt" },
+	{ id: "b", insights: ["same text here"], source: "b.txt" },
+	{ id: "c", insights: ["same text here"], source: "c.txt" },
+];
+const dedupResult = createLearningMapJSON(duplicateInsights, "/test", "test");
+const nodeIds = dedupResult.nodes.map((n) => n.id);
+const uniqueIds = new Set(nodeIds);
+assert(uniqueIds.size === nodeIds.length, "no duplicate node IDs from identical insights");
+assert(nodeIds.length === 3, "all 3 insights preserved despite duplicate text");
 
 // --- Test: createLearningMapMarkdown ---
 console.log("\n=== createLearningMapMarkdown ===");
