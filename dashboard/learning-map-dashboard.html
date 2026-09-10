@@ -264,7 +264,7 @@
     function renderData(data) {
       document.getElementById('insight-count').textContent = data.topics.length;
       document.getElementById('topic-count').textContent = data.topics.length;
-      document.getElementById('connection-count').textContent = data.path.length - 1;
+      document.getElementById('connection-count').textContent = data.edgeCount || 0;
 
       const topicsList = document.getElementById('topics-list');
       topicsList.innerHTML = data.topics.map(topic => `
@@ -302,10 +302,11 @@
         .then(r => r.json())
         .then(data => {
           // Transform session-map.json to dashboard format
+          const nodeMap = Object.fromEntries((data.nodes || []).map(n => [n.id, n]));
           const topics = (data.nodes || []).map(n => ({
             name: n.name || 'Untitled',
             desc: n.content || '',
-            refs: n.source ? [typeof n.source === 'string' ? n.source : `${n.source.file}:${n.source.line}`] : [],
+            refs: n.source ? [typeof n.source === 'string' ? n.source : (n.source.file ? `${n.source.file}:${n.source.line}` : n.source.id || '')] : [],
             type: n.type,
             difficulty: n.difficulty,
             tags: n.tags || []
@@ -319,14 +320,13 @@
           // If no tour, derive path from prerequisite_of edges
           if (path.length === 0) {
             const prereqEdges = (data.edges || []).filter(e => e.type === 'prerequisite_of' || e.type === 'builds_on');
-            const nodeMap = Object.fromEntries(topics.map(t => [t.name, t]));
             path.push(...prereqEdges.slice(0, 10).map(e => ({
               title: nodeMap[e.source]?.name || e.source,
               desc: e.description || ''
             })));
           }
 
-          renderData({ topics, path });
+          renderData({ topics, path, edgeCount: (data.edges || []).length });
         });
     } else {
       renderData(sampleData);
