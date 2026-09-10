@@ -216,6 +216,13 @@
     <div class="header">
       <h1>📚 Learning Map</h1>
       <p>สรุปสิ่งที่เรียนรู้จาก session นี้</p>
+      <div style="margin-top: 12px;">
+        <label for="file-input" style="cursor: pointer; padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; color: var(--muted);">
+          📂 Load session-map.json
+        </label>
+        <input type="file" id="file-input" accept=".json" style="display: none;">
+        <span id="file-name" style="margin-left: 8px; font-size: 12px; color: var(--muted);"></span>
+      </div>
     </div>
 
     <div class="stats">
@@ -293,6 +300,52 @@
       btn.textContent = document.body.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
     }
 
+    // Transform session-map.json to dashboard format
+    function transformSessionMap(data) {
+      const nodeMap = Object.fromEntries((data.nodes || []).map(n => [n.id, n]));
+      const topics = (data.nodes || []).map(n => ({
+        name: n.name || 'Untitled',
+        desc: n.content || '',
+        refs: n.source ? [typeof n.source === 'string' ? n.source : (n.source.file ? `${n.source.file}:${n.source.line}` : n.source.id || '')] : [],
+        type: n.type,
+        difficulty: n.difficulty,
+        tags: n.tags || []
+      }));
+
+      const path = (data.tour || []).sort((a, b) => a.order - b.order).map(t => ({
+        title: t.title,
+        desc: t.description
+      }));
+
+      // If no tour, derive path from prerequisite_of edges
+      if (path.length === 0) {
+        const prereqEdges = (data.edges || []).filter(e => e.type === 'prerequisite_of' || e.type === 'builds_on');
+        path.push(...prereqEdges.slice(0, 10).map(e => ({
+          title: nodeMap[e.source]?.name || e.source,
+          desc: e.description || ''
+        })));
+      }
+
+      return { topics, path, edgeCount: (data.edges || []).length };
+    }
+
+    // Load from file picker
+    document.getElementById('file-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('file-name').textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          renderData(transformSessionMap(data));
+        } catch (err) {
+          console.error('Invalid JSON:', err);
+        }
+      };
+      reader.readAsText(file);
+    });
+
     // Load data from URL parameter or use sample
     const urlParams = new URLSearchParams(window.location.search);
     const dataFile = urlParams.get('data');
@@ -301,32 +354,7 @@
       fetch(dataFile)
         .then(r => r.json())
         .then(data => {
-          // Transform session-map.json to dashboard format
-          const nodeMap = Object.fromEntries((data.nodes || []).map(n => [n.id, n]));
-          const topics = (data.nodes || []).map(n => ({
-            name: n.name || 'Untitled',
-            desc: n.content || '',
-            refs: n.source ? [typeof n.source === 'string' ? n.source : (n.source.file ? `${n.source.file}:${n.source.line}` : n.source.id || '')] : [],
-            type: n.type,
-            difficulty: n.difficulty,
-            tags: n.tags || []
-          }));
-
-          const path = (data.tour || []).sort((a, b) => a.order - b.order).map(t => ({
-            title: t.title,
-            desc: t.description
-          }));
-
-          // If no tour, derive path from prerequisite_of edges
-          if (path.length === 0) {
-            const prereqEdges = (data.edges || []).filter(e => e.type === 'prerequisite_of' || e.type === 'builds_on');
-            path.push(...prereqEdges.slice(0, 10).map(e => ({
-              title: nodeMap[e.source]?.name || e.source,
-              desc: e.description || ''
-            })));
-          }
-
-          renderData({ topics, path, edgeCount: (data.edges || []).length });
+          renderData(transformSessionMap(data));
         });
     } else {
       renderData(sampleData);
