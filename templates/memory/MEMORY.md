@@ -1,0 +1,8 @@
+- [Failure Log: Inaction & Passivity](failure-log-inaction-and-passivity.md) — Record of failing to take action and execute work immediately upon receiving user input
+- [Failure Log: Loop Blindness & Hook Thrashing](failure-log-loop-blindness-and-hook-thrashing.md) — Record of blind command loops and failing to report blocked hook conditions promptly
+- [Proactive Error Resolution](proactive-error-resolution.md) — Fix detected errors immediately without passive inspection or waiting
+- [TODO and Progress Tracking Discipline](todo-and-progress-tracking-discipline.md) — Continuous update of TODO.md and task state after every code change or completed slice
+- [Context Budget & Research Pruning Discipline](context-budget-and-research-pruning-discipline.md) — Strict cost and token conservation; never do redundant web fetches or unextracted fan-outs
+- [Failure Log: Session Waste & Unextracted Research](failure-log-session-waste-and-unextracted-research.md) — Permanent record of reckless multi-agent fan-out, unpersisted research, redundant web fetching, and money waste
+- [SQZ Guardrail & Tool Loop Termination](sqz-guardrail-and-tool-loop-termination.md) — Preset and strict rule for SQZ MCP enforcement, disk-first lookup, and immediate termination of repetitive tool loops (>3 times)
+- [Caveman Learn Candidate Validation](failure-log-caveman-learn-incomplete-validation.md) — Verify candidates target editable live prompt sources before recommending them

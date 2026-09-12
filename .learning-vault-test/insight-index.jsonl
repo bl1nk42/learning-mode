@@ -1,3 +1,0 @@
-{"id":"test1","insights":["Understanding context building requires searching relevant nodes first"],"references":[{"file":"src/context.ts","line":42}],"source":{"project":"D:\\01work\\Active\\workspace\\learning-mode"},"recordedAt":"2026-09-10T10:00:00Z"}
-{"id":"test2","insights":["Graph search expands 1-hop to find connected nodes"],"references":[{"file":"src/search.ts","line":15}],"source":{"project":"D:\\01work\\Active\\workspace\\learning-mode"},"recordedAt":"2026-09-10T10:01:00Z"}
-{"id":"test3","insights":["TDD requires identifying testable seams in the codebase"],"references":[{"file":"tests/seams.test.js","line":8}],"source":{"project":"D:\\01work\\Active\\workspace\\learning-mode"},"recordedAt":"2026-09-10T10:02:00Z"}
