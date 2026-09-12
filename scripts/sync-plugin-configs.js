@@ -127,10 +127,6 @@ const targets = [
 	["hooks/hooks.json",        () => json({ $schema: "https://json.schemastore.org/claude-code-settings.json", ...JSON.parse(hooksFile("PLUGIN_ROOT")).hooks })],
 	[".cursor/hooks.json",      () => cursorHooks()],
 
-	// Hermes manifest (YAML)
-	["plugin.yaml", () =>
-		`name: ${S.name}\nversion: ${S.version}\ndescription: ${S.description}\nprovides_hooks:\n  - pre_llm_call\nprovides_skills:\n  - ${S.name}\n`],
-
 	// OpenCode manifest
 	["opencode.json", () => json({
 		"$schema": "https://opencode.ai/config.json",

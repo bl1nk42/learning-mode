@@ -3,5 +3,20 @@ version: 0.3.0
 description: Learning guidance, per-project insight logs, and on-demand deep study.
 provides_hooks:
   - pre_llm_call
+  - post_response
+  - session_start
+  - session_end
 provides_skills:
+  - insight-wiki
+  - learning-map
   - learning-mode
+  - learning-mode-deep
+  - scaffold-exercises
+  - teach
+  - writing-beats
+  - writing-shape
+  - json-canvas
+  - obsidian-bases
+  - obsidian-cli
+  - obsidian-markdown
+  - qmd
