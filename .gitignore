@@ -1,4 +1,23 @@
+# Runtime data
 .learning-mode/
+learning-mode-test/
+learning-vault-test/
+
+# Python
+__pycache__/
+*.pyc
 .pytest_cache/
+
+# Node
 node_modules/
-scripts/learning-map/__pycache__/config.cpython-314.pyc
+
+# IDE / MCP state
+.serena/
+.playwright-mcp/
+
+# Eval artifacts
+.plugin-eval/
+
+# Temp files
+*.tmp
+*.bak
