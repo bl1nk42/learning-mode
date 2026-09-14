@@ -8,6 +8,9 @@ argument-hint: "[--full|--incremental|--view <view-id>]"
 
 # Learning Map
 
+> [!info] Format
+> All Markdown output uses Obsidian Flavored Markdown — see [[obsidian-markdown]] skill for frontmatter, wikilinks, callouts, and tags.
+
 Collect the small pieces Learning Mode created throughout a session and assemble them into a learning map for PEOPLE to read. This uses agents to analyze and connect insights, not just group them.
 
 ## When to use

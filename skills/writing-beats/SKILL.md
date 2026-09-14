@@ -5,7 +5,7 @@ description: Use when verified raw material needs a reader journey of small, gro
 
 # Writing Beats
 
-Treat the supplied evidence pile as read-only. Do not search for new evidence or edit source material.
+Treat the supplied evidence pile as read-only. Do not search for new evidence or edit source material. Write `beats.md` using Obsidian Flavored Markdown — see [[obsidian-markdown]] skill for frontmatter, wikilinks, and callouts.
 
 Before drafting, establish what the reader already knows. Then create a `beats.md` path one beat at a time. Every beat must list:
 

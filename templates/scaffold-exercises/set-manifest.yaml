@@ -1,0 +1,14 @@
+---
+title: "{{set-title}}"
+tags:
+  - exercise
+  - scaffold
+format: basic          # basic | linear | quiz | level | quest | scenario | challenge
+difficulty: beginner   # beginner | intermediate | advanced
+status: draft          # draft | ready | published
+prerequisites: []
+learning_objectives:
+  - "{{objective-1}}"
+  - "{{objective-2}}"
+assumptions: []
+---

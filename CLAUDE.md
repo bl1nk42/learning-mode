@@ -49,6 +49,12 @@ insight-collector → relationship-builder → map-generator
 - `opencode.json`, `gemini-extension.json`
 - `plugin.yaml` maintained separately (Pi/Hermes)
 
+### Commands
+Slash commands in `commands/` — each `.md` file is a user-invocable command:
+- `/learning-map` — สร้าง learning map จาก insights
+- `/teach` — สอน concept ใหม่ผ่าน teaching workspace
+- `/insight-wiki` — สร้าง wiki จาก insights
+
 ### Hook Events
 | Event | Script | Purpose |
 |-------|--------|---------|
@@ -66,6 +72,20 @@ insight-collector → relationship-builder → map-generator
 - `schemas/plugin.schema.json` — JSON Schema draft-07 for plugin manifests (`additionalProperties: false`)
 - `hooks/runtime.js` — Shared hook utilities: `readInput`, `appendLogs`, `emit`, `readMode`
 - `scripts/learning-map/config.js` — Vault path resolution (`LEARNING_MODE_VAULT` env → `~/.learning-mode/config.json` → default)
+
+
+## Environment Variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `LEARNING_MODE_HOME` | `~/.learning-mode` | Root dir for all learning mode data |
+| `LEARNING_MODE_VAULT` | from `~/.learning-mode/config.json` | Vault path for insight storage |
+| `CLAUDE_CONFIG_DIR` | `~/.claude` | Claude config directory (hooks use this to find plugin root) |
+| `CONTEXT7_API_KEY` | — | Context7 MCP server API key |
+| `SOURCEGRAPH_ACCESS_TOKEN` | — | Sourcegraph MCP server access token |
+
+See `.env.example` for template.
+
 
 ## Conventions
 

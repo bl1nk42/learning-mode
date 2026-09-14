@@ -5,7 +5,7 @@ description: Use when a verified evidence pile and grounded beat path need a coh
 
 # Writing Shape
 
-Treat `evidence.md` and `beats.md` as read-only raw material. Write a separate `README.md`; never edit or silently discard source evidence.
+Treat `evidence.md` and `beats.md` as read-only raw material. Write a separate `README.md` using Obsidian Flavored Markdown — see [[obsidian-markdown]] skill for frontmatter, wikilinks, and callouts. Never edit or silently discard source evidence.
 
 Start from the grounded beat path. Write in the language of the user request, using plain explanations and preserving code identifiers and source links. The opening must state the topic, why the connected insights matter, and the reader prerequisites. Then shape the rest into a coherent chapter: each paragraph must introduce or connect one grounded idea, not replay insight logs chronologically.
 

@@ -1,5 +1,7 @@
 # Runtime data
 .learning-mode/
+.learning-mode-test/
+.learning-vault-test/
 learning-mode-test/
 learning-vault-test/
 
@@ -21,3 +23,5 @@ node_modules/
 # Temp files
 *.tmp
 *.bak
+.ua/knowledge-graph.json
+.ua/domain-graph.json
