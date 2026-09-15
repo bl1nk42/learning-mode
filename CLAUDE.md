@@ -8,7 +8,7 @@ Learning Mode (v0.3.0) — Portable learning-oriented guidance plugin for coding
 
 ## Commands
 
-```sh
+```bash
 # Tests
 python3 -B -m pytest -q                              # Python test suite
 node scripts/learning-map/collect-facets.test.js      # Data collection seam
@@ -29,6 +29,7 @@ node scripts/check-versions.js                        # Version consistency acro
 ## Architecture
 
 ### Data Pipeline
+
 ```
 Session Stop hook → record-insights.js → ~/.learning-mode/insight-index.jsonl
                 → auto-collect-learning-map.js → collect-facets.js
@@ -36,13 +37,16 @@ Session Stop hook → record-insights.js → ~/.learning-mode/insight-index.json
 ```
 
 ### Agent Pipeline (learning-map skill)
+
 ```
 insight-collector → relationship-builder → map-generator
   (5 sources)       (5 edge types)        (nodes + edges + tour → session map)
 ```
 
 ### Plugin Config System
+
 `plugin-source.json` is single source of truth. `scripts/sync-plugin-configs.js` generates:
+
 - `plugin.json` × 7 (Claude, Codex, GitHub, Devin, Grok, Qoder, root)
 - `marketplace.json` × 3
 - `hooks.json` × 2 + `.cursor/hooks.json`
@@ -50,19 +54,22 @@ insight-collector → relationship-builder → map-generator
 - `plugin.yaml` maintained separately (Pi/Hermes)
 
 ### Commands
+
 Slash commands in `commands/` — each `.md` file is a user-invocable command:
+
 - `/learning-map` — สร้าง learning map จาก insights
 - `/teach` — สอน concept ใหม่ผ่าน teaching workspace
 - `/insight-wiki` — สร้าง wiki จาก insights
 
 ### Hook Events
-| Event | Script | Purpose |
-|-------|--------|---------|
-| SessionStart | session-start.js | Load state, inject AGENTS.md |
-| UserPromptSubmit | mode-tracker.js | Track $learning-mode on/off |
-| SubagentStart | subagent-start.js | Configure subagent context |
-| Stop | record-insights.js | Extract ★ Insight blocks |
-| Stop | auto-collect-learning-map.js | Create session map |
+
+| Event            | Script                       | Purpose                      |
+| ---------------- | ---------------------------- | ---------------------------- |
+| SessionStart     | session-start.js             | Load state, inject AGENTS.md |
+| UserPromptSubmit | mode-tracker.js              | Track $learning-mode on/off  |
+| SubagentStart    | subagent-start.js            | Configure subagent context   |
+| Stop             | record-insights.js           | Extract ★ Insight blocks     |
+| Stop             | auto-collect-learning-map.js | Create session map           |
 
 ## Key Files
 
@@ -73,19 +80,17 @@ Slash commands in `commands/` — each `.md` file is a user-invocable command:
 - `hooks/runtime.js` — Shared hook utilities: `readInput`, `appendLogs`, `emit`, `readMode`
 - `scripts/learning-map/config.js` — Vault path resolution (`LEARNING_MODE_VAULT` env → `~/.learning-mode/config.json` → default)
 
-
 ## Environment Variables
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `LEARNING_MODE_HOME` | `~/.learning-mode` | Root dir for all learning mode data |
-| `LEARNING_MODE_VAULT` | from `~/.learning-mode/config.json` | Vault path for insight storage |
-| `CLAUDE_CONFIG_DIR` | `~/.claude` | Claude config directory (hooks use this to find plugin root) |
-| `CONTEXT7_API_KEY` | — | Context7 MCP server API key |
-| `SOURCEGRAPH_ACCESS_TOKEN` | — | Sourcegraph MCP server access token |
+| Variable                   | Default                             | Purpose                                                      |
+| -------------------------- | ----------------------------------- | ------------------------------------------------------------ |
+| `LEARNING_MODE_HOME`       | `~/.learning-mode`                  | Root dir for all learning mode data                          |
+| `LEARNING_MODE_VAULT`      | from `~/.learning-mode/config.json` | Vault path for insight storage                               |
+| `CLAUDE_CONFIG_DIR`        | `~/.claude`                         | Claude config directory (hooks use this to find plugin root) |
+| `CONTEXT7_API_KEY`         | —                                   | Context7 MCP server API key                                  |
+| `SOURCEGRAPH_ACCESS_TOKEN` | —                                   | Sourcegraph MCP server access token                          |
 
 See `.env.example` for template.
-
 
 ## Conventions
 

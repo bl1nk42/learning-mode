@@ -7,7 +7,7 @@ argument-hint: "What would you like to learn about?"
 
 # Teach
 
-Use only when the user explicitly asks to be taught. This is the teaching engine for long-running learning; it is not an insight logger and it must not be replaced by ad-hoc quizzes. All Markdown files must use Obsidian Flavored Markdown — see [[obsidian-markdown]] skill for frontmatter, wikilinks, callouts, and tags.
+Use only when the user explicitly asks to be taught. This is the teaching engine for long-running learning; it is not an insight logger and it must not be replaced by ad-hoc quizzes. All Markdown files must use Obsidian Flavored Markdown — see the `obsidian-markdown` skill for frontmatter, wikilinks, callouts, and tags.
 
 Use one user-owned teaching workspace at `$LEARNING_MODE_HOME/teach` (default: `~/.learning-mode/teach`), never one workspace per source project. Its state is:
 

@@ -6,7 +6,7 @@ argument-hint: "Topic or question for the insight wiki"
 
 # Insight Wiki
 
-Create a durable, user-readable wiki from Learning Mode evidence. This is a curator skill, not a teacher: collect, verify, connect, and explain insights; leave lessons, exercises, and learning records to `teach`. All Markdown files must use Obsidian Flavored Markdown — see [[obsidian-markdown]] skill for frontmatter, wikilinks, callouts, and tags.
+Create a durable, user-readable wiki from Learning Mode evidence. This is a curator skill, not a teacher: collect, verify, connect, and explain insights; leave lessons, exercises, and learning records to `teach`. All Markdown files must use Obsidian Flavored Markdown — see the `obsidian-markdown` skill for frontmatter, wikilinks, callouts, and tags.
 
 ## Input and output
 

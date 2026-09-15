@@ -5,7 +5,7 @@ description: Use when the user asks to design or create practice exercises, quiz
 
 # Scaffold Exercises
 
-Design durable Obsidian Markdown exercises for `teach`; do not build a CLI. Use `$LEARNING_MODE_HOME/teach/exercises/` by default, or a user-chosen location. Templates are in `templates/scaffold-exercises/`. Use [[obsidian-markdown]] skill for all Markdown formatting — wikilinks, frontmatter, callouts, tags. Whether that folder is committed, ignored, or synced is the user's choice; never commit or change Git settings unless explicitly asked.
+Design durable Obsidian Markdown exercises for `teach`; do not build a CLI. Use `$LEARNING_MODE_HOME/teach/exercises/` by default, or a user-chosen location. Templates are in `templates/scaffold-exercises/`. Use the `obsidian-markdown` skill for all Markdown formatting — wikilinks, frontmatter, callouts, tags. Whether that folder is committed, ignored, or synced is the user's choice; never commit or change Git settings unless explicitly asked.
 
 ## Choose the format
 

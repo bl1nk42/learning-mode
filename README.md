@@ -1,51 +1,57 @@
 # Learning Mode
 
-Portable learning-oriented guidance for coding agents. Version 0.3.0 adds Markdown exercise design to the Deep Learning pipeline.
+Learning Mode ช่วยให้ coding agent ของคุณเป็นครูสอน coding ได้ — บันทึก insight ทุก session, สร้าง knowledge map อัตโนมัติ, และออกแบบ exercise สำหรับทบทวน
 
-Privacy and terms: [Privacy Policy](PRIVACY.md) and [Terms of Service](TERMS.md).
+ไม่ใช่แค่ log — แต่เปลี่ยน coding session ให้เป็น learning material จริงๆ
 
-## Behavior
+## มันทำอะไรได้บ้าง?
 
-- Explain trade-offs only for meaningful decisions: behavior, errors, algorithms, data, UX, or architecture.
-- Ask one short, concrete question when the user can choose that behavior.
-- Do routine work without turning it into a lesson.
-- Add a blockquote `★ Insight` before and after non-trivial code changes; terminals that style Markdown quotes render it prominently.
-- Keep one deduplicated log at `.learning-mode/insights.jsonl`; the hook extracts only framed `★ Insight` blocks whose bullets cite exact `path/to/file:line` references, so subagent chatter is excluded.
-- Append references to the user index at `~/.learning-mode/insight-index.jsonl` (override with `LEARNING_MODE_HOME`), allowing teaching to connect related work from multiple projects.
+**จับ insight อัตโนมัติ** — ทุกครั้งที่ agent อธิบาย trade-off หรือแก้ bug ที่ไม่ trivial, Learning Mode จะบันทึก `★ Insight` พร้อม `file:line` reference ไว้ให้
 
-### Runtime states
+**สร้าง knowledge map** — เก็บ insight หลาย session เข้าด้วยกัน แล้วสร้าง visual map ว่าคุณเรียนรู้อะไรไปบ้าง, แต่ละ insight เชื่อมกันยังไง
 
-- `$learning-mode default` is the normal state: concise guidance and new canonical log entries.
-- `$learning-mode off` returns to ordinary behavior and stops new log capture.
-- `$insight-wiki <topic>` searches, verifies, and connects cross-project insight evidence into a user-readable wiki in the user's language.
-- Each user-requested wiki includes `learning-plan.canvas`: an optional Obsidian view of its Markdown evidence and `Observed → Practice → Demonstrated → Transfer` path.
-- `writing-beats` turns the verified evidence pile into a prerequisite-safe grounding path; `writing-shape` turns that path into the wiki chapter.
-- `$learning-mode-deep` routes `insight-wiki → teach`; `teach` owns one multi-session user workspace and never has to act as a log search engine.
-- `scaffold-exercises` turns a teaching mission or wiki into Markdown practice: basic, linear, quiz, level, quest, scenario, or challenge.
+**สอนแบบ multi-session** — สั่ง `/teach` เพื่อเริ่ม teaching workspace ที่เก็บ state ข้าม session — mission, resources, learning records ครบทุกขั้นตอน
 
-The shared source of truth is [AGENTS.md](AGENTS.md). Host-specific adapters only load that same guidance or the bundled skills.
+**ออกแบบ exercise** — สั่ง `scaffold-exercises` เพื่อสร้าง quiz, flashcard, workshop จาก insight ที่มีอยู่
 
-## Install
+**สร้าง insight wiki** — สั่ง `/insight-wiki` เพื่อเชื่อม insights ข้าม project ให้เป็น wiki ที่อ่านเข้าใจง่าย
 
-Repository URL: `https://github.com/bl1nk42/learning-mode`. For local development, use the host's local-plugin workflow instead.
+## ตัวอย่าง
 
-### Marketplace plugins
+```
+# ใน coding session, agent จะเพิ่ม insight block อัตโนมัติ:
+
+> ★ Insight
+> - ใช้ `path.resolve()` กับ relative path แทน raw string เพราะ relative path
+>   จะไม่ทำงานถ้า working directory ต่างจากที่คาด `scripts/learning-map/config.js:25`
+> - Slug dedup guard ป้องกัน insight ซ้ำ — ถ้า insight เดียวกันถูกบันทึก 2 ครั้ง
+>   จะไม่ทับกัน `scripts/learning-map/collect-facets.js:45`
+
+# พอจบ session, learning map จะถูกสร้างอัตโนมัติ:
+
+$ ls ~/.learning-mode/session-maps/
+  abe392a0-2026-09-11.json    ← learning map ของ session นี้
+```
+
+## ติดตั้ง
+
+Repository: `https://github.com/bl1nk42/learning-mode`
+
+### Marketplace Plugins
+
+```sh
+# Claude Code
+/plugin marketplace add https://github.com/bl1nk42/learning-mode
+/plugin install learning-mode@learning-mode
+```
+
+เปิด `/hooks` ใน Claude Code, review hook แล้ว trust จากนั้นเปิด thread ใหม่
 
 ```sh
 # Codex
 codex plugin marketplace add https://github.com/bl1nk42/learning-mode
 codex plugin add learning-mode@learning-mode
-```
 
-Open `/hooks` in Codex, review and trust the hook, then start a new thread.
-
-```text
-# Claude Code — run as two separate slash commands
-/plugin marketplace add https://github.com/bl1nk42/learning-mode
-/plugin install learning-mode@learning-mode
-```
-
-```sh
 # GitHub Copilot CLI
 copilot plugin marketplace add https://github.com/bl1nk42/learning-mode
 copilot plugin install learning-mode@learning-mode
@@ -57,7 +63,7 @@ grok plugin install https://github.com/bl1nk42/learning-mode --trust
 devin plugins install https://github.com/bl1nk42/learning-mode
 ```
 
-### Extensions and runtime adapters
+### Extensions & Runtime Adapters
 
 ```sh
 # Gemini CLI
@@ -73,59 +79,104 @@ pi install git:https://github.com/bl1nk42/learning-mode
 hermes plugins install https://github.com/bl1nk42/learning-mode --enable
 ```
 
-OpenCode uses the bundled runtime adapter. Put this in the target project's `opencode.json`:
+OpenCode — ใส่ใน `opencode.json` ของ project:
 
 ```json
-{ "plugin": ["/absolute/path/to/learning-mode/.opencode/plugins/learning-mode.mjs"] }
+{
+	"plugin": [
+		"/absolute/path/to/learning-mode/.opencode/plugins/learning-mode.mjs"
+	]
+}
 ```
 
-### Skill and rule adapters
+### Rule & Skill Adapters
 
-- OpenClaw: copy `.openclaw/skills/learning-mode/` to `~/.openclaw/skills/`.
-- Swival: stage or copy `.swival/skills/learning-mode/` into its skills library.
-- Qoder: use `.qoder-plugin/plugin.json`, or copy `.qoder/rules/learning-mode.md` into the target project's `.qoder/rules/`.
-- Cursor, Windsurf, Cline, Copilot IDE, and Kiro: retain their matching bundled rule file at the same relative path.
-- CodeWhale, VS Code Codex, Amp, Jules, Zed, and generic agents: use `AGENTS.md` as the project instruction file.
-- Junie: select `.junie/guidelines.md` as its Guidelines Path.
+| Agent                                                   | วิธีติดตั้ง                                                               |
+| ------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Cursor / Windsurf / Cline / Copilot IDE / Kiro          | ใช้ rule file ที่ bundle มา (`.cursor/rules/` ฯลฯ)                        |
+| OpenClaw                                                | copy `.openclaw/skills/learning-mode/` → `~/.openclaw/skills/`            |
+| Swival                                                  | copy `.swival/skills/learning-mode/` → skills library                     |
+| Qoder                                                   | ใช้ `.qoder-plugin/plugin.json` หรือ copy `.qoder/rules/learning-mode.md` |
+| Junie                                                   | ตั้ง Guidelines Path เป็น `.junie/guidelines.md`                          |
+| CodeWhale / VS Code Codex / Amp / Jules / Zed / generic | ใช้ `AGENTS.md` เป็น project instruction file                             |
 
-## Evaluation
+## ใช้งาน
 
-The reproducible Plugin Eval baseline, real-artifact scenarios, measured usage, and task-fit assessment are in [docs/evaluations/2026-09-02-plugin-eval.md](docs/evaluations/2026-09-02-plugin-eval.md).
+### Runtime States
 
-## Development checks
+| Command               | ผลลัพธ์                                                   |
+| --------------------- | --------------------------------------------------------- |
+| `$learning-mode full` | เปิด mode ปกติ — agent จะจับ insight อัตโนมัติ            |
+| `$learning-mode off`  | ปิด mode — กลับเป็น agent ปกติ ไม่บันทึกอะไร              |
+| `$learning-mode deep` | deep learning — route ไป insight-wiki → teach             |
+| `/learning-map`       | สร้าง learning map จาก insights ที่เก็บไว้                |
+| `/teach`              | สอน concept ใหม่ผ่าน teaching workspace แบบ multi-session |
+| `/insight-wiki`       | สร้าง wiki จาก insights ข้าม project                      |
+
+### Exercise Formats
+
+`scaffold-exercises` รองรับ:
+
+| Format      | เหมาะกับ                                       |
+| ----------- | ---------------------------------------------- |
+| `basic`     | concept เดียว — explainer → problem → solution |
+| `linear`    | หลาย exercise เรียงจากง่ายไปยาก                |
+| `quiz`      | คำถามสั้นๆ สำหรับ spaced repetition            |
+| `flashcard` | หน้าละ concept — front/back สำหรับ recall เร็ว |
+| `workshop`  | โปรเจค multi-step รวมหลาย concept              |
+| `level`     | ไต่ระดับจาก beginner → advanced                |
+| `quest`     | เชื่อม task หลายตัวเข้า final challenge        |
+| `scenario`  | ตัดสินใจใน context จริง                        |
+| `challenge` | synthesis task โดยไม่มี explainer ใหม่         |
+
+## Dashboard
+
+เปิด dashboard เพื่อดู learning map แบบ interactive:
 
 ```sh
-python3 /data/data/com.termux/files/home/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
-node scripts/check-rule-copies.js
-node scripts/check-versions.js
-node hooks/session-start.js
-python3 -B -m pytest -q
+open dashboard/learning-map-dashboard.html
+# หรือ load JSON จาก file:
+open dashboard/learning-map-dashboard.html?data=file:///path/to/session-map.json
 ```
 
-The Codex and Claude hooks require `node` on `PATH`.
+## Privacy
 
-### Claude status line (optional)
+ไม่มี data ถูกส่งออก — ทุกอย่างเก็บไว้ในเครื่องของคุณ (`~/.learning-mode/`)
 
-The bundled badge displays the current state and count of recorded insights. Add this command to Claude Code's `statusLine` setting if you want it:
+- [Privacy Policy](PRIVACY.md)
+- [Terms of Service](TERMS.md)
 
-```json
-{ "statusLine": { "type": "command", "command": "sh /absolute/path/to/learning-mode/hooks/learning-mode-statusline.sh" } }
-```
+---
 
-## Artifact validation and dashboard
+## For Contributors
 
-Learning-plan output is checked in two layers: the wiki checker verifies required evidence, phase nodes, edge references, and source links; then it validates the canvas against the JSON Schema and recomputes the source-bundle and canvas SHA-256 values recorded in `learning-plan.receipt.json`. Use `--json` when an agent needs machine-readable diagnostics:
+### Development
 
 ```sh
-node scripts/check-insight-wiki.js <wiki-dir> <insight-index.jsonl> --json
+python3 -B -m pytest -q                           # Python test suite
+node scripts/learning-map/collect-facets.test.js   # Data collection seam
+node scripts/learning-map/schema-validate.test.js  # Schema validation
+node scripts/plugin-sync.test.js                   # Config sync consistency
+node scripts/sync-plugin-configs.js --apply        # Sync all platform configs
 ```
 
-The dashboard is designed first as the editable HTML source template at `dashboard/learning-mode-dashboard.html`. The generator injects the current artifact snapshot into its `__DATA__` slot, so layout and interaction logic remain reviewable in HTML rather than being hidden in a JavaScript string.
+### Architecture
 
-Generate a user-facing HTML dashboard from the same artifacts:
-
-```sh
-node scripts/generate-learning-mode-dashboard.js <wiki-dir> <insight-index.jsonl> [output.html]
+```
+Session Stop hook → record-insights.js → ~/.learning-mode/insight-index.jsonl
+                → auto-collect-learning-map.js → collect-facets.js
+                → ~/.learning-mode/session-maps/<project-id>-<date>.json
 ```
 
-The dashboard is an interactive generated view, not a source of truth. It includes synchronized findings/project filters, Chart.js phase and project charts, sortable findings columns, KPI cards, and schema/receipt integrity details. Regenerate it after changing the wiki or canvas.
+Single source of truth: `plugin-source.json` → `scripts/sync-plugin-configs.js` generates 15+ platform configs
+
+Conventions:
+
+- Colors: oklch — `--primary: oklch(0.765 0.149 162.5)`
+- Thai in UI labels, comments
+- Node IDs: `<type>:<slugified-name>`
+- Edge types: `builds_on`, `related_to`, `contradicts`, `prerequisite_of`, `applies_to`
+
+### Evaluation
+
+[Plugin Eval baseline](docs/evaluations/2026-09-02-plugin-eval.md) — reproducible scenarios, measured usage, task-fit assessment.
